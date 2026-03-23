@@ -68,4 +68,4 @@ Course: ENT208TC - XJTLU 2026
 
 ### 📌 Related Links
 - Development Log: https://xjtlums-my.sharepoint.com/:w:/g/personal/jiujin_wu23_student_xjtlu_edu_cn/IQDg163WQ0zUTJErT6_JJmqgAWKzbn1An6aUhYhSR3rQfyE?e=uPgfiV
-- GitHub Repository: [自动获取当前仓库链接]
+- GitHub Repository: https://github.com/Zixinin/ENT208-29th-HanMeet/edit/main/README.md
