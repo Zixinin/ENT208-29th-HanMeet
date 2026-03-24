@@ -1,15 +1,14 @@
 # 🌏 HanMeet
 ## Situational Chinese Learning Application
-### 沉浸式场景化中文互动学习工具
 
 ---
 
-### 📖 Project Overview 项目概述
+### 📖 Project Overview
 An interactive Chinese learning application that helps foreigners master practical Chinese vocabulary through simulated real-life scenarios. We combine gamified interaction with daily situations to make Chinese learning more intuitive, engaging and effective.
 
 ---
 
-### ❌ Core Problem 核心痛点
+### ❌ Core Problem
 Many foreigners studying or working in China face daily communication barriers due to limited Chinese proficiency.
 - Traditional learning focuses on vocabulary memorization instead of real-life usage
 - Lack of contextual and interactive learning experience
@@ -18,14 +17,14 @@ Many foreigners studying or working in China face daily communication barriers d
 
 ---
 
-### 👥 Target Users 目标用户
+### 👥 Target Users
 Our application serves two core groups of Chinese learners:
 1. **Overseas Chinese learners**: Lack real-life practice environments and need visual & interactive learning methods
 2. **Foreigners in China**: Need to quickly adapt to daily scenarios (shopping, class, housing, etc.) and improve practical communication skills
 
 ---
 
-### ✅ Our Solution 解决方案
+### ✅ Our Solution
 We build a **gamified situational learning platform**:
 - Users control a virtual character in realistic daily scenarios
 - Learn Chinese vocabulary by interacting with real objects in the scene
@@ -35,7 +34,7 @@ We build a **gamified situational learning platform**:
 
 ---
 
-### 🎮 Core Features 核心功能
+### 🎮 Core Features
 - 🛒 **Simulated real-life scenarios** (Supermarket, Classroom, Apartment, etc.)
 - 🎮 **Gamified learning interaction**
 - 📷 **Visual vocabulary learning with real objects**
@@ -44,7 +43,7 @@ We build a **gamified situational learning platform**:
 
 ---
 
-### 📊 Success Metrics 成功指标
+### 📊 Success Metrics
 - Users can complete a basic learning task within 30 seconds without instructions
 - At least 80% of test users can finish one scenario independently and rate it easy to use
 - At least 5 users continue using the app for one week without reminders
@@ -53,7 +52,7 @@ We build a **gamified situational learning platform**:
 
 ---
 
-### 🛠️ Tech Stack 技术栈
+### 🛠️ Tech Stack
 - Frontend: Interactive UI Design
 - AI: Image recognition & intelligent interaction
 - Core: Scenario simulation & gamified learning logic
