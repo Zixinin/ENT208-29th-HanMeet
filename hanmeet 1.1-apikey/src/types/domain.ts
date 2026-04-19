@@ -1,8 +1,10 @@
 export type TabId = 'game' | 'notebook' | 'dictionary' | 'profile';
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
-export type SpaceId = 'classroom' | 'supermarket' | 'dorm' | 'cafeteria';
+export type SpaceId = 'classroom' | 'supermarket' | 'dorm' | 'cafeteria' | 'cafe';
 export type ItemRarity = 'common' | 'hidden';
+
+export type TileType = 'grass' | 'path' | 'road' | 'sidewalk' | 'tree' | 'wall' | 'door' | 'water' | 'flower';
 
 export interface AvatarPreset {
   id: string;
@@ -58,4 +60,45 @@ export interface UserProgress {
   xp: number;
   unlockedSpaces: SpaceId[];
   selectedDifficulty: Difficulty;
+}
+
+export interface Building {
+  id: 'supermarket' | 'school' | 'cafe';
+  label: string;
+  chineseLabel: string;
+  color: string;
+  tileX: number;
+  tileY: number;
+  tileW: number;
+  tileH: number;
+  doorX: number;
+  doorY: number;
+}
+
+export interface NpcData {
+  id: string;
+  tileX: number;
+  tileY: number;
+  emoji: string;
+  hint: string;
+}
+
+export interface PlayerState {
+  x: number;
+  y: number;
+  facing: 'up' | 'down' | 'left' | 'right';
+  moving: boolean;
+  frame: number;
+}
+
+export interface InteriorItem {
+  id: string;
+  spaceId: SpaceId;
+  chinese: string;
+  pinyin: string;
+  english: string;
+  xp: number;
+  icon: string;
+  x: number;
+  y: number;
 }
