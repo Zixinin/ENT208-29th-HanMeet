@@ -27,63 +27,75 @@ export function ProfileTab({
   );
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6">
-      <div className="bg-white border-4 border-black shadow-[6px_6px_0_0_rgba(0,0,0,1)] p-5">
-        <h2 className="text-2xl font-bold flex items-center gap-2"><UserRound className="w-6 h-6" /> Player Profile</h2>
-        <p className="text-sm opacity-70">Pick from 10 preset retro avatars and customize your style.</p>
+    <div style={{ minHeight: '100%', background: 'var(--pixel-bg)', color: 'var(--pixel-text)', fontFamily: "'Press Start 2P', monospace", padding: '16px' }}>
+      <div className="max-w-5xl mx-auto space-y-6">
+        <div style={{ background: 'var(--pixel-panel)', border: '3px solid var(--pixel-border)', boxShadow: '3px 3px 0 #000', padding: 20 }}>
+          <h2 style={{ color: 'var(--pixel-yellow)', fontFamily: "'Press Start 2P', monospace", fontSize: '12px' }} className="flex items-center gap-2"><UserRound className="w-6 h-6" /> Player Profile</h2>
+          <p style={{ color: 'var(--pixel-text)', fontSize: '9px' }} className="mt-1 opacity-70">Pick from 10 preset retro avatars and customize your style.</p>
 
-        <div className="mt-4 flex flex-wrap items-end gap-3">
-          <div>
-            <label className="text-xs uppercase opacity-60">Username</label>
-            <input
-              value={draftName}
-              onChange={(event) => setDraftName(event.target.value)}
-              className="block px-3 py-2 border-2 border-black"
-              maxLength={20}
-            />
-          </div>
-          <button
-            onClick={() => onSetUsername(draftName)}
-            className="px-3 py-2 border-2 border-black bg-black text-white"
-          >
-            Save Name
-          </button>
-        </div>
-      </div>
-
-      <div className="bg-white border-4 border-black shadow-[6px_6px_0_0_rgba(0,0,0,1)] p-5">
-        <h3 className="font-bold flex items-center gap-2"><Palette className="w-5 h-5" /> Avatar Presets</h3>
-
-        <div className="mt-3 grid grid-cols-2 md:grid-cols-5 gap-3">
-          {AVATAR_PRESETS.map((avatar) => (
+          <div className="mt-4 flex flex-wrap items-end gap-3">
+            <div>
+              <label style={{ color: 'var(--pixel-text)', fontSize: '8px' }} className="block mb-1 opacity-60">Username</label>
+              <input
+                value={draftName}
+                onChange={(event) => setDraftName(event.target.value)}
+                style={{ fontFamily: "'Press Start 2P', monospace", fontSize: '8px', background: '#0f0f1a', border: '2px solid var(--pixel-border)', color: 'var(--pixel-text)', padding: '8px' }}
+                className="block"
+                maxLength={20}
+              />
+            </div>
             <button
-              key={avatar.id}
-              onClick={() => onSetAvatar(avatar.id)}
-              className={`p-3 border-2 transition-all ${avatarPresetId === avatar.id ? 'border-black bg-emerald-100' : 'border-zinc-300 bg-zinc-50 hover:border-black'}`}
+              onClick={() => onSetUsername(draftName)}
+              style={{ fontFamily: "'Press Start 2P', monospace", fontSize: '8px', padding: '8px 12px', background: 'var(--pixel-green)', border: '3px solid #000', boxShadow: '3px 3px 0 #000', color: '#000', cursor: 'pointer' }}
             >
-              <div className="text-3xl">{avatar.emoji}</div>
-              <p className="text-xs mt-1 font-semibold">{avatar.name}</p>
+              Save Name
             </button>
-          ))}
-        </div>
-
-        <div className="mt-5">
-          <label className="text-xs uppercase opacity-60">Outfit Color</label>
-          <div className="mt-2 flex items-center gap-3">
-            <input
-              type="color"
-              value={outfitColor}
-              onChange={(event) => onSetOutfitColor(event.target.value)}
-              className="w-12 h-10 border border-black"
-            />
-            <p className="font-mono text-sm">{outfitColor}</p>
           </div>
         </div>
 
-        <div className="mt-6 border-2 border-black p-4 bg-zinc-50 text-center">
-          <p className="text-xs uppercase opacity-60">Preview</p>
-          <p className="text-4xl mt-2" style={{ filter: `drop-shadow(0 0 0 ${outfitColor})` }}>{currentAvatar.emoji}</p>
-          <p className="font-bold mt-2">{username}</p>
+        <div style={{ background: 'var(--pixel-panel)', border: '3px solid var(--pixel-border)', boxShadow: '3px 3px 0 #000', padding: 20 }}>
+          <h3 style={{ color: 'var(--pixel-yellow)', fontFamily: "'Press Start 2P', monospace", fontSize: '12px' }} className="flex items-center gap-2"><Palette className="w-5 h-5" /> Avatar Presets</h3>
+
+          <div className="mt-3 grid grid-cols-2 md:grid-cols-5 gap-3">
+            {AVATAR_PRESETS.map((avatar) => (
+              <button
+                key={avatar.id}
+                onClick={() => onSetAvatar(avatar.id)}
+                style={{
+                  fontFamily: "'Press Start 2P', monospace",
+                  fontSize: '8px',
+                  padding: '12px',
+                  background: avatarPresetId === avatar.id ? 'var(--pixel-green)' : 'var(--pixel-panel)',
+                  border: avatarPresetId === avatar.id ? '3px solid var(--pixel-border)' : '3px solid #444',
+                  boxShadow: '3px 3px 0 #000',
+                  color: avatarPresetId === avatar.id ? '#000' : 'var(--pixel-text)',
+                  cursor: 'pointer',
+                }}
+              >
+                <div style={{ fontSize: '24px' }}>{avatar.emoji}</div>
+                <p style={{ fontSize: '7px', marginTop: '4px' }}>{avatar.name}</p>
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-5">
+            <label style={{ color: 'var(--pixel-text)', fontSize: '8px' }} className="block mb-2 opacity-60">Outfit Color</label>
+            <div className="flex items-center gap-3">
+              <input
+                type="color"
+                value={outfitColor}
+                onChange={(event) => onSetOutfitColor(event.target.value)}
+                style={{ width: '48px', height: '40px', border: '2px solid var(--pixel-border)', background: 'none', cursor: 'pointer' }}
+              />
+              <p style={{ color: 'var(--pixel-text)', fontSize: '9px' }}>{outfitColor}</p>
+            </div>
+          </div>
+
+          <div style={{ border: '3px solid var(--pixel-border)', padding: 16, background: '#0f0f1a', textAlign: 'center', marginTop: '24px' }}>
+            <p style={{ color: 'var(--pixel-text)', fontSize: '8px' }} className="opacity-60">Preview</p>
+            <p className="mt-2" style={{ fontSize: '32px', filter: `drop-shadow(0 0 0 ${outfitColor})` }}>{currentAvatar.emoji}</p>
+            <p style={{ color: 'var(--pixel-yellow)', fontFamily: "'Press Start 2P', monospace", fontSize: '10px' }} className="mt-2">{username}</p>
+          </div>
         </div>
       </div>
     </div>

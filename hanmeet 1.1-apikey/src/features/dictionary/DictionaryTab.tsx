@@ -115,83 +115,86 @@ export function DictionaryTab({ onAddNotebook }: DictionaryTabProps) {
   };
 
   return (
-    <div className="p-6 max-w-3xl mx-auto space-y-5">
-      <div className="bg-white border-4 border-black shadow-[6px_6px_0_0_rgba(0,0,0,1)] p-5">
-        <h2 className="text-2xl font-bold">Dictionary</h2>
-        <p className="text-sm opacity-70">Local vocab first, then AI fallback with example sentence.</p>
+    <div style={{ minHeight: '100%', background: 'var(--pixel-bg)', color: 'var(--pixel-text)', fontFamily: "'Press Start 2P', monospace", padding: '16px' }}>
+      <div className="max-w-3xl mx-auto space-y-5">
+        <div style={{ background: 'var(--pixel-panel)', border: '3px solid var(--pixel-border)', boxShadow: '3px 3px 0 #000', padding: 20 }}>
+          <h2 style={{ color: 'var(--pixel-yellow)', fontFamily: "'Press Start 2P', monospace", fontSize: '12px' }}>Dictionary</h2>
+          <p style={{ color: 'var(--pixel-text)', fontSize: '9px' }} className="mt-1 opacity-70">Local vocab first, then AI fallback with example sentence.</p>
 
-        <div className="mt-4 flex gap-2">
-          <div className="flex-1 relative">
-            <input
-              value={query}
-              onChange={(event) => {
-                setQuery(event.target.value);
-                setAiResult(null);
-                setError(null);
-              }}
-              placeholder="Search English word..."
-              className="w-full px-4 py-3 border-2 border-black focus:outline-none"
-            />
-            <Search className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 opacity-50" />
+          <div className="mt-4 flex gap-2">
+            <div className="flex-1 relative">
+              <input
+                value={query}
+                onChange={(event) => {
+                  setQuery(event.target.value);
+                  setAiResult(null);
+                  setError(null);
+                }}
+                placeholder="Search English word..."
+                style={{ fontFamily: "'Press Start 2P', monospace", fontSize: '8px', background: '#0f0f1a', border: '2px solid var(--pixel-border)', color: 'var(--pixel-text)', padding: '8px' }}
+                className="w-full focus:outline-none"
+              />
+              <Search className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 opacity-50" />
+            </div>
+            <button
+              onClick={runAiLookup}
+              style={{ fontFamily: "'Press Start 2P', monospace", fontSize: '8px', padding: '8px 12px', background: 'var(--pixel-blue)', border: '3px solid #000', boxShadow: '3px 3px 0 #000', color: '#fff', cursor: 'pointer' }}
+            >
+              AI Lookup
+            </button>
           </div>
-          <button
-            onClick={runAiLookup}
-            className="px-4 py-3 border-2 border-black bg-black text-white hover:bg-zinc-800"
-          >
-            AI Lookup
-          </button>
+
+          {error && <p style={{ color: 'var(--pixel-accent)', fontSize: '9px' }} className="mt-3">{error}</p>}
         </div>
 
-        {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
-      </div>
-
-      <div className="space-y-3">
-        {localResults.length > 0 && (
-          <>
-            <p className="text-xs uppercase tracking-wide opacity-60">Local Results</p>
-            {localResults.map((result, index) => (
-              <div key={`${result.english}-${index}`} className="bg-white border-2 border-black p-4 flex items-center justify-between">
-                <div>
-                  <p className="text-2xl font-bold">{result.chinese}</p>
-                  <p className="font-mono text-sm opacity-60">{result.pinyin}</p>
-                  <p className="uppercase tracking-wide text-sm">{result.english}</p>
+        <div className="space-y-3">
+          {localResults.length > 0 && (
+            <>
+              <p style={{ color: 'var(--pixel-text)', fontSize: '8px' }} className="opacity-60">Local Results</p>
+              {localResults.map((result, index) => (
+                <div key={`${result.english}-${index}`} style={{ background: 'var(--pixel-panel)', border: '3px solid var(--pixel-border)', boxShadow: '3px 3px 0 #000', padding: 16 }} className="flex items-center justify-between">
+                  <div>
+                    <p style={{ color: 'var(--pixel-yellow)', fontFamily: "'Press Start 2P', monospace", fontSize: '16px' }}>{result.chinese}</p>
+                    <p style={{ color: 'var(--pixel-text)', fontSize: '9px', opacity: 0.6 }}>{result.pinyin}</p>
+                    <p style={{ color: 'var(--pixel-text)', fontSize: '9px' }}>{result.english}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => speak(result.chinese)} style={{ fontFamily: "'Press Start 2P', monospace", fontSize: '8px', padding: '8px', background: 'var(--pixel-blue)', border: '3px solid #000', boxShadow: '3px 3px 0 #000', color: '#fff', cursor: 'pointer' }}><Volume2 className="w-4 h-4" /></button>
+                    <button onClick={() => onAddNotebook(result)} style={{ fontFamily: "'Press Start 2P', monospace", fontSize: '8px', padding: '8px', background: 'var(--pixel-green)', border: '3px solid #000', boxShadow: '3px 3px 0 #000', color: '#000', cursor: 'pointer' }}><Plus className="w-4 h-4" /></button>
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <button onClick={() => speak(result.chinese)} className="p-2 border border-black"><Volume2 className="w-4 h-4" /></button>
-                  <button onClick={() => onAddNotebook(result)} className="p-2 border border-black"><Plus className="w-4 h-4" /></button>
-                </div>
-              </div>
-            ))}
-          </>
-        )}
+              ))}
+            </>
+          )}
 
-        {loading && (
-          <div className="bg-white border-2 border-black p-8 text-center flex items-center justify-center gap-2">
-            <Loader2 className="w-4 h-4 animate-spin" /> Searching AI...
-          </div>
-        )}
-
-        {aiResult && (
-          <div className="bg-gradient-to-br from-white to-pink-50 border-4 border-pink-600 p-4">
-            <p className="text-xs uppercase tracking-wide text-pink-700">AI Result</p>
-            <p className="text-3xl font-bold">{aiResult.chinese}</p>
-            <p className="font-mono text-sm opacity-60">{aiResult.pinyin}</p>
-            <p className="uppercase tracking-wide text-sm">{aiResult.english}</p>
-            {aiResult.example && (
-              <p className="text-sm mt-2 bg-white border border-pink-200 p-2">Example: {aiResult.example}</p>
-            )}
-            <div className="mt-3 flex gap-2">
-              <button onClick={() => speak(aiResult.chinese)} className="px-3 py-2 border border-black bg-white flex items-center gap-1"><Volume2 className="w-4 h-4" /> Listen</button>
-              <button onClick={() => onAddNotebook(aiResult)} className="px-3 py-2 border border-black bg-black text-white flex items-center gap-1"><Plus className="w-4 h-4" /> Add to Notebook</button>
+          {loading && (
+            <div style={{ background: 'var(--pixel-panel)', border: '3px solid var(--pixel-border)', boxShadow: '3px 3px 0 #000', padding: '32px', textAlign: 'center', color: 'var(--pixel-text)', fontSize: '9px' }} className="flex items-center justify-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" /> Searching AI...
             </div>
-          </div>
-        )}
+          )}
 
-        {!loading && !aiResult && localResults.length === 0 && query.trim() && (
-          <div className="bg-white border-2 border-dashed border-zinc-300 p-8 text-center text-zinc-500">
-            No local result. Try AI Lookup.
-          </div>
-        )}
+          {aiResult && (
+            <div style={{ background: 'var(--pixel-panel)', border: '3px solid var(--pixel-accent)', boxShadow: '3px 3px 0 #000', padding: 16 }}>
+              <p style={{ color: 'var(--pixel-accent)', fontSize: '8px' }}>AI Result</p>
+              <p style={{ color: 'var(--pixel-yellow)', fontFamily: "'Press Start 2P', monospace", fontSize: '20px' }} className="mt-1">{aiResult.chinese}</p>
+              <p style={{ color: 'var(--pixel-text)', fontSize: '9px', opacity: 0.6 }}>{aiResult.pinyin}</p>
+              <p style={{ color: 'var(--pixel-text)', fontSize: '9px' }}>{aiResult.english}</p>
+              {aiResult.example && (
+                <p style={{ color: 'var(--pixel-text)', fontSize: '9px', background: '#0f0f1a', border: '2px solid var(--pixel-border)', padding: '8px', marginTop: '8px' }}>Example: {aiResult.example}</p>
+              )}
+              <div className="mt-3 flex gap-2">
+                <button onClick={() => speak(aiResult.chinese)} style={{ fontFamily: "'Press Start 2P', monospace", fontSize: '8px', padding: '8px 12px', background: 'var(--pixel-blue)', border: '3px solid #000', boxShadow: '3px 3px 0 #000', color: '#fff', cursor: 'pointer' }} className="flex items-center gap-1"><Volume2 className="w-4 h-4" /> Listen</button>
+                <button onClick={() => onAddNotebook(aiResult)} style={{ fontFamily: "'Press Start 2P', monospace", fontSize: '8px', padding: '8px 12px', background: 'var(--pixel-green)', border: '3px solid #000', boxShadow: '3px 3px 0 #000', color: '#000', cursor: 'pointer' }} className="flex items-center gap-1"><Plus className="w-4 h-4" /> Add to Notebook</button>
+              </div>
+            </div>
+          )}
+
+          {!loading && !aiResult && localResults.length === 0 && query.trim() && (
+            <div style={{ background: 'var(--pixel-panel)', border: '3px dashed var(--pixel-border)', padding: '32px', textAlign: 'center', color: 'var(--pixel-text)', fontSize: '9px' }}>
+              No local result. Try AI Lookup.
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

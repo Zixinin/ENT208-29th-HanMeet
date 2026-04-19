@@ -29,114 +29,134 @@ export function NotebookTab({ entries, onRemove, onGrade }: NotebookTabProps) {
   }, [entries, quizTarget]);
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6">
-      <div className="bg-white border-4 border-black shadow-[6px_6px_0_0_rgba(0,0,0,1)] p-4 flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2"><BookOpen className="w-6 h-6" /> Notebook</h2>
-          <p className="text-sm opacity-70">Saved words with lightweight spaced repetition.</p>
+    <div style={{ minHeight: '100%', background: 'var(--pixel-bg)', color: 'var(--pixel-text)', fontFamily: "'Press Start 2P', monospace", padding: '16px' }}>
+      <div className="max-w-5xl mx-auto space-y-6">
+        <div style={{ background: 'var(--pixel-panel)', border: '3px solid var(--pixel-border)', boxShadow: '3px 3px 0 #000', padding: 16 }} className="flex items-center justify-between">
+          <div>
+            <h2 style={{ color: 'var(--pixel-yellow)', fontFamily: "'Press Start 2P', monospace", fontSize: '12px' }} className="flex items-center gap-2"><BookOpen className="w-6 h-6" /> Notebook</h2>
+            <p style={{ color: 'var(--pixel-text)', fontSize: '9px' }} className="mt-1 opacity-70">Saved words with lightweight spaced repetition.</p>
+          </div>
+          <div className="text-right">
+            <p style={{ color: 'var(--pixel-text)', fontSize: '9px' }}>Total: <span style={{ color: 'var(--pixel-yellow)' }}>{entries.length}</span></p>
+            <p style={{ color: 'var(--pixel-text)', fontSize: '9px' }}>Due today: <span style={{ color: 'var(--pixel-yellow)' }}>{dueEntries.length}</span></p>
+          </div>
         </div>
-        <div className="text-right text-sm">
-          <p>Total: <span className="font-bold">{entries.length}</span></p>
-          <p>Due today: <span className="font-bold">{dueEntries.length}</span></p>
+
+        <div className="flex gap-2">
+          <button
+            onClick={() => setMode('flashcards')}
+            style={{
+              fontFamily: "'Press Start 2P', monospace",
+              fontSize: '8px',
+              padding: '8px 12px',
+              background: mode === 'flashcards' ? 'var(--pixel-blue)' : 'var(--pixel-panel)',
+              border: '3px solid var(--pixel-border)',
+              boxShadow: '3px 3px 0 #000',
+              color: '#fff',
+              cursor: 'pointer',
+            }}
+          >
+            Flashcards
+          </button>
+          <button
+            onClick={() => setMode('quiz')}
+            style={{
+              fontFamily: "'Press Start 2P', monospace",
+              fontSize: '8px',
+              padding: '8px 12px',
+              background: mode === 'quiz' ? 'var(--pixel-blue)' : 'var(--pixel-panel)',
+              border: '3px solid var(--pixel-border)',
+              boxShadow: '3px 3px 0 #000',
+              color: '#fff',
+              cursor: 'pointer',
+            }}
+          >
+            Quiz
+          </button>
         </div>
-      </div>
 
-      <div className="flex gap-2">
-        <button
-          onClick={() => setMode('flashcards')}
-          className={`px-3 py-2 border-2 ${mode === 'flashcards' ? 'bg-black text-white border-black' : 'bg-white border-black'}`}
-        >
-          Flashcards
-        </button>
-        <button
-          onClick={() => setMode('quiz')}
-          className={`px-3 py-2 border-2 ${mode === 'quiz' ? 'bg-black text-white border-black' : 'bg-white border-black'}`}
-        >
-          Quiz
-        </button>
-      </div>
+        {mode === 'flashcards' && (
+          <div className="space-y-3">
+            {entries.length === 0 && (
+              <div style={{ background: 'var(--pixel-panel)', border: '3px dashed var(--pixel-border)', padding: '40px', textAlign: 'center', color: 'var(--pixel-text)', fontSize: '9px' }}>
+                Your notebook is empty. Explore the game and dictionary to add words.
+              </div>
+            )}
 
-      {mode === 'flashcards' && (
-        <div className="space-y-3">
-          {entries.length === 0 && (
-            <div className="bg-white border-4 border-dashed border-zinc-300 p-10 text-center text-zinc-500">
-              Your notebook is empty. Explore the game and dictionary to add words.
-            </div>
-          )}
-
-          {entries.map((entry) => {
-            const due = isDue(entry);
-            return (
-              <div key={entry.id} className="bg-white border-2 border-black p-4 flex gap-3 items-center">
-                <div className="flex-1">
-                  <div className="flex items-baseline gap-2">
-                    <p className="text-2xl font-bold">{entry.chinese}</p>
-                    <p className="font-mono text-sm opacity-60">{entry.pinyin}</p>
+            {entries.map((entry) => {
+              const due = isDue(entry);
+              return (
+                <div key={entry.id} style={{ background: 'var(--pixel-panel)', border: '3px solid var(--pixel-border)', boxShadow: '3px 3px 0 #000', padding: 16 }} className="flex gap-3 items-center">
+                  <div className="flex-1">
+                    <div className="flex items-baseline gap-2">
+                      <p style={{ color: 'var(--pixel-yellow)', fontFamily: "'Press Start 2P', monospace", fontSize: '16px' }}>{entry.chinese}</p>
+                      <p style={{ color: 'var(--pixel-text)', fontSize: '9px', opacity: 0.6 }}>{entry.pinyin}</p>
+                    </div>
+                    <p style={{ color: 'var(--pixel-text)', fontSize: '9px' }}>{entry.english}</p>
+                    <p style={{ color: 'var(--pixel-text)', fontSize: '8px', opacity: 0.6, marginTop: '4px' }}>
+                      Source: {entry.source}{entry.aiGenerated ? ' (AI)' : ''} · Mastery: {entry.mastery} · {due ? 'Due now' : 'Scheduled'}
+                    </p>
                   </div>
-                  <p className="text-sm uppercase tracking-wide">{entry.english}</p>
-                  <p className="text-xs opacity-60 mt-1">
-                    Source: {entry.source}{entry.aiGenerated ? ' (AI)' : ''} · Mastery: {entry.mastery} · {due ? 'Due now' : 'Scheduled'}
-                  </p>
+
+                  <div className="flex gap-2 items-center">
+                    <button onClick={() => speak(entry.chinese)} style={{ fontFamily: "'Press Start 2P', monospace", fontSize: '8px', padding: '8px', background: 'var(--pixel-blue)', border: '3px solid #000', boxShadow: '3px 3px 0 #000', color: '#fff', cursor: 'pointer' }}><Volume2 className="w-4 h-4" /></button>
+                    <button onClick={() => onGrade(entry.id, 'again')} style={{ fontFamily: "'Press Start 2P', monospace", fontSize: '8px', padding: '8px 12px', background: 'var(--pixel-accent)', border: '3px solid #000', boxShadow: '3px 3px 0 #000', color: '#fff', cursor: 'pointer' }}>Again</button>
+                    <button onClick={() => onGrade(entry.id, 'good')} style={{ fontFamily: "'Press Start 2P', monospace", fontSize: '8px', padding: '8px 12px', background: 'var(--pixel-yellow)', border: '3px solid #000', boxShadow: '3px 3px 0 #000', color: '#000', cursor: 'pointer' }}>Good</button>
+                    <button onClick={() => onGrade(entry.id, 'easy')} style={{ fontFamily: "'Press Start 2P', monospace", fontSize: '8px', padding: '8px 12px', background: 'var(--pixel-green)', border: '3px solid #000', boxShadow: '3px 3px 0 #000', color: '#000', cursor: 'pointer' }}>Easy</button>
+                    <button onClick={() => onRemove(entry.id)} style={{ fontFamily: "'Press Start 2P', monospace", fontSize: '8px', padding: '8px', background: 'var(--pixel-accent)', border: '3px solid #000', boxShadow: '3px 3px 0 #000', color: '#fff', cursor: 'pointer' }}><Trash2 className="w-4 h-4" /></button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {mode === 'quiz' && (
+          <div style={{ background: 'var(--pixel-panel)', border: '3px solid var(--pixel-border)', boxShadow: '3px 3px 0 #000', padding: 24 }} className="space-y-4">
+            {!quizTarget && <p style={{ color: 'var(--pixel-text)', fontSize: '9px' }}>Add words to start quiz mode.</p>}
+
+            {quizTarget && (
+              <>
+                <p style={{ color: 'var(--pixel-text)', fontSize: '9px', opacity: 0.6 }}>What is the English meaning?</p>
+                <p style={{ color: 'var(--pixel-yellow)', fontFamily: "'Press Start 2P', monospace", fontSize: '24px' }}>{quizTarget.chinese}</p>
+                <p style={{ color: 'var(--pixel-text)', fontSize: '9px', opacity: 0.6 }}>{quizTarget.pinyin}</p>
+
+                <div className="grid grid-cols-2 gap-2">
+                  {quizOptions.map((option) => (
+                    <button
+                      key={option}
+                      onClick={() => {
+                        if (option === quizTarget.english) {
+                          onGrade(quizTarget.id, 'good');
+                          setQuizFeedback('Correct! Card moved forward.');
+                        } else {
+                          onGrade(quizTarget.id, 'again');
+                          setQuizFeedback('Not yet. Card scheduled sooner.');
+                        }
+                      }}
+                      style={{ fontFamily: "'Press Start 2P', monospace", fontSize: '8px', padding: '12px', background: 'var(--pixel-blue)', border: '3px solid #000', boxShadow: '3px 3px 0 #000', color: '#fff', cursor: 'pointer', textAlign: 'left' }}
+                    >
+                      {option}
+                    </button>
+                  ))}
                 </div>
 
-                <div className="flex gap-2 items-center">
-                  <button onClick={() => speak(entry.chinese)} className="p-2 border border-black hover:bg-zinc-100"><Volume2 className="w-4 h-4" /></button>
-                  <button onClick={() => onGrade(entry.id, 'again')} className="px-2 py-1 border border-red-700 text-red-700 text-xs">Again</button>
-                  <button onClick={() => onGrade(entry.id, 'good')} className="px-2 py-1 border border-amber-700 text-amber-700 text-xs">Good</button>
-                  <button onClick={() => onGrade(entry.id, 'easy')} className="px-2 py-1 border border-emerald-700 text-emerald-700 text-xs">Easy</button>
-                  <button onClick={() => onRemove(entry.id)} className="p-2 border border-black hover:bg-red-50 text-red-600"><Trash2 className="w-4 h-4" /></button>
-                </div>
-              </div>
-            );
-          })}
+                {quizFeedback && (
+                  <div style={{ background: '#0f0f1a', border: '2px solid var(--pixel-border)', padding: '8px 12px', color: 'var(--pixel-text)', fontSize: '9px' }} className="flex items-center justify-between">
+                    <span>{quizFeedback}</span>
+                    <button onClick={() => setQuizFeedback(null)} style={{ background: 'none', border: 'none', color: 'var(--pixel-text)', cursor: 'pointer' }}><X className="w-4 h-4" /></button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+
+        <div style={{ background: 'var(--pixel-panel)', border: '2px solid var(--pixel-border)', padding: '12px', color: 'var(--pixel-text)', fontSize: '8px' }} className="flex gap-4">
+          <span className="flex items-center gap-1"><RotateCcw className="w-3 h-3" /> Again = 1 day</span>
+          <span className="flex items-center gap-1"><Check className="w-3 h-3" /> Good = 3 days</span>
+          <span className="flex items-center gap-1"><Check className="w-3 h-3" /> Easy = 7 days</span>
         </div>
-      )}
-
-      {mode === 'quiz' && (
-        <div className="bg-white border-4 border-black p-6 space-y-4 shadow-[6px_6px_0_0_rgba(0,0,0,1)]">
-          {!quizTarget && <p className="text-zinc-500">Add words to start quiz mode.</p>}
-
-          {quizTarget && (
-            <>
-              <p className="text-sm uppercase opacity-60">What is the English meaning?</p>
-              <p className="text-4xl font-bold">{quizTarget.chinese}</p>
-              <p className="font-mono text-zinc-500">{quizTarget.pinyin}</p>
-
-              <div className="grid grid-cols-2 gap-2">
-                {quizOptions.map((option) => (
-                  <button
-                    key={option}
-                    onClick={() => {
-                      if (option === quizTarget.english) {
-                        onGrade(quizTarget.id, 'good');
-                        setQuizFeedback('Correct! Card moved forward.');
-                      } else {
-                        onGrade(quizTarget.id, 'again');
-                        setQuizFeedback('Not yet. Card scheduled sooner.');
-                      }
-                    }}
-                    className="p-3 border-2 border-black hover:bg-zinc-100 text-left"
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-
-              {quizFeedback && (
-                <div className="text-sm bg-zinc-100 border border-zinc-300 px-3 py-2 flex items-center justify-between">
-                  <span>{quizFeedback}</span>
-                  <button onClick={() => setQuizFeedback(null)}><X className="w-4 h-4" /></button>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      )}
-
-      <div className="bg-zinc-50 border border-zinc-300 p-3 text-xs text-zinc-600 flex gap-4">
-        <span className="flex items-center gap-1"><RotateCcw className="w-3 h-3" /> Again = 1 day</span>
-        <span className="flex items-center gap-1"><Check className="w-3 h-3" /> Good = 3 days</span>
-        <span className="flex items-center gap-1"><Check className="w-3 h-3" /> Easy = 7 days</span>
       </div>
     </div>
   );

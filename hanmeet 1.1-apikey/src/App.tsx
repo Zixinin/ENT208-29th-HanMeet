@@ -134,6 +134,8 @@ export default function App() {
                 onGainXp={gainXp}
                 onAddNotebook={addFromItem}
                 onDiscoverHiddenItem={discoverHiddenItem}
+                notebook={notebook}
+                onGradeNotebook={gradeNotebook}
               />
             )}
 
