@@ -4,7 +4,7 @@ export type Difficulty = 'easy' | 'medium' | 'hard';
 export type SpaceId = 'classroom' | 'supermarket' | 'dorm' | 'cafeteria' | 'cafe';
 export type ItemRarity = 'common' | 'hidden';
 
-export type TileType = 'grass' | 'path' | 'road' | 'sidewalk' | 'tree' | 'wall' | 'door' | 'water' | 'flower';
+export type TileType = 'grass' | 'path' | 'road' | 'sidewalk' | 'tree' | 'wall' | 'door' | 'water' | 'flower' | 'farmland' | 'cliff';
 
 export interface AvatarPreset {
   id: string;
@@ -63,7 +63,7 @@ export interface UserProgress {
 }
 
 export interface Building {
-  id: 'supermarket' | 'school' | 'cafe';
+  id: 'supermarket' | 'school' | 'cafe' | 'library' | 'house';
   label: string;
   chineseLabel: string;
   color: string;
@@ -73,6 +73,7 @@ export interface Building {
   tileH: number;
   doorX: number;
   doorY: number;
+  inProgress?: boolean;
 }
 
 export interface NpcData {
