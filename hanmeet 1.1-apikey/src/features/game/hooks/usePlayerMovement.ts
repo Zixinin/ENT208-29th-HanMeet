@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { PlayerState } from '../../../types/domain';
-import {
-  TILE_SIZE as DEFAULT_TILE_SIZE,
-  CITY_COLS as DEFAULT_COLS,
-  CITY_ROWS as DEFAULT_ROWS,
-  isBlocked as defaultIsBlocked,
-} from '../data/cityLayout';
+
+const DEFAULT_TILE_SIZE = 1;
+const DEFAULT_COLS = 1280;
+const DEFAULT_ROWS = 720;
+const defaultIsBlocked = () => false;
 
 const SPEED = 3;
 

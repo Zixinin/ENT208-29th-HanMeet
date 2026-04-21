@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Difficulty, SpaceId, VocabularyItem, InteriorItem, NotebookEntry } from '../../types/domain';
-import { CityMap } from './components/CityMap';
-import { SupermarketInterior } from './components/SupermarketInterior';
-import { ClassroomInterior } from './components/ClassroomInterior';
-import { CafeInterior } from './components/CafeInterior';
-import { HouseInterior } from './components/HouseInterior';
+import { InteriorItem, NotebookEntry, VocabularyItem, Difficulty, SpaceId, RoomItem } from '../../types/domain';
+import { RoomSelect } from './components/RoomSelect';
+import type { RoomId } from './components/RoomSelect';
+import { RoomInterior } from './components/RoomInterior';
 import { FlashcardQuiz } from './components/FlashcardQuiz';
+import { CAFE_ROOM_ITEMS } from './data/cafeRoomItems';
+import { SUPERMARKET_ROOM_ITEMS } from './data/supermarketRoomItems';
+import { HOUSE_ROOM_ITEMS } from './data/houseRoomItems';
 
-type Scene = 'city' | 'supermarket' | 'school' | 'cafe' | 'house';
+type Scene = 'select' | RoomId;
 
 interface GameTabProps {
   level: number;
@@ -25,18 +26,18 @@ interface GameTabProps {
   onGradeNotebook: (id: string, grade: number) => void;
 }
 
-export function GameTab({
-  outfitColor,
-  onGainXp,
-  onAddNotebook,
-  notebook,
-  onGradeNotebook,
-}: GameTabProps) {
-  const [scene, setScene] = useState<Scene>('city');
+const ROOM_ITEMS: Record<RoomId, RoomItem[]> = {
+  cafe:        CAFE_ROOM_ITEMS,
+  supermarket: SUPERMARKET_ROOM_ITEMS,
+  house:       HOUSE_ROOM_ITEMS,
+};
+
+export function GameTab({ onGainXp, onAddNotebook, notebook, onGradeNotebook }: GameTabProps) {
+  const [scene, setScene] = useState<Scene>('select');
   const [quizOpen, setQuizOpen] = useState(false);
 
   useEffect(() => {
-    if (scene !== 'city') return;
+    if (scene !== 'select') return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() === 'q') setQuizOpen(true);
     };
@@ -45,6 +46,7 @@ export function GameTab({
   }, [scene]);
 
   const handleSave = (item: InteriorItem) => {
+    onGainXp(item.xp);
     onAddNotebook({
       id: item.id,
       spaceId: item.spaceId,
@@ -62,49 +64,19 @@ export function GameTab({
 
   return (
     <div style={{ width: '100%', height: 'calc(100vh - 120px)', position: 'relative' }}>
-      {scene === 'city' && (
-        <>
-          <CityMap
-            outfitColor={outfitColor ?? '#4d96ff'}
-            onEnterBuilding={(id) => setScene(id as Scene)}
-          />
-          <div style={{
-            position: 'absolute', bottom: 12, left: 12,
-            fontFamily: "'Press Start 2P', monospace", fontSize: 7,
-            color: 'rgba(255,255,255,0.4)', lineHeight: 1.8, zIndex: 10, pointerEvents: 'none',
-          }}>
-            Q = Flashcard Quiz
-          </div>
-        </>
+      {scene === 'select' && (
+        <RoomSelect onEnter={(id) => setScene(id)} />
       )}
-      {scene === 'supermarket' && (
-        <SupermarketInterior
-          onExit={() => setScene('city')}
+
+      {(scene === 'cafe' || scene === 'supermarket' || scene === 'house') && (
+        <RoomInterior
+          roomId={scene}
+          items={ROOM_ITEMS[scene]}
+          onBack={() => setScene('select')}
           onSave={handleSave}
-          onGainXp={onGainXp}
         />
       )}
-      {scene === 'school' && (
-        <ClassroomInterior
-          onExit={() => setScene('city')}
-          onSave={handleSave}
-          onGainXp={onGainXp}
-        />
-      )}
-      {scene === 'cafe' && (
-        <CafeInterior
-          onExit={() => setScene('city')}
-          onSave={handleSave}
-          onGainXp={onGainXp}
-        />
-      )}
-      {scene === 'house' && (
-        <HouseInterior
-          onExit={() => setScene('city')}
-          onSave={handleSave}
-          onGainXp={onGainXp}
-        />
-      )}
+
       {quizOpen && (
         <FlashcardQuiz
           entries={notebook}
