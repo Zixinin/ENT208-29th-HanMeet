@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { InteriorItem } from '../../../types/domain';
-import { SM_ENGINE_CONFIG } from '../data/supermarketLayout';
+import { HOUSE_ENGINE_CONFIG } from '../data/houseLayout';
 import { useTileEngine } from '../hooks/useTileEngine';
 import { InteractableConfig } from '../../../types/tileEngine';
 
@@ -13,8 +13,8 @@ interface Props {
   onGainXp: (xp: number) => void;
 }
 
-export function SupermarketInterior({ onExit, onSave, onGainXp }: Props) {
-  const { canvasRef, containerRef, scale, nearInteractable } = useTileEngine(SM_ENGINE_CONFIG);
+export function HouseInterior({ onExit, onSave, onGainXp }: Props) {
+  const { canvasRef, containerRef, scale, nearInteractable } = useTileEngine(HOUSE_ENGINE_CONFIG);
   const [activeItem, setActiveItem] = useState<InteractableConfig | null>(null);
   const [discovered, setDiscovered] = useState<Set<string>>(new Set());
 
@@ -38,12 +38,12 @@ export function SupermarketInterior({ onExit, onSave, onGainXp }: Props) {
     if (!activeItem) return;
     onSave({
       id: activeItem.id,
-      spaceId: 'supermarket',
+      spaceId: 'supermarket', // SpaceId workaround — 'house' not yet in domain union
       chinese: activeItem.chinese,
       pinyin: activeItem.pinyin,
       english: activeItem.english ?? '',
       xp: 10,
-      icon: '🛒',
+      icon: '🏠',
       x: activeItem.tileX,
       y: activeItem.tileY,
     });
@@ -51,7 +51,7 @@ export function SupermarketInterior({ onExit, onSave, onGainXp }: Props) {
   };
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100%', overflow: 'hidden', position: 'relative', background: '#1a1000' }}>
+    <div ref={containerRef} style={{ width: '100%', height: '100%', overflow: 'hidden', position: 'relative', background: '#1a0f00' }}>
       <canvas
         ref={canvasRef}
         width={VIRTUAL_WIDTH}
@@ -69,7 +69,7 @@ export function SupermarketInterior({ onExit, onSave, onGainXp }: Props) {
         color: 'rgba(255,255,255,0.7)', background: 'rgba(0,0,0,0.5)',
         border: '2px solid rgba(0,0,0,0.4)', padding: '6px 8px', lineHeight: 1.8,
       }}>
-        超市 — Supermarket<br />
+        住宅 — House<br />
         WASD = MOVE · E = INSPECT<br />
         ESC = EXIT
       </div>
@@ -78,7 +78,7 @@ export function SupermarketInterior({ onExit, onSave, onGainXp }: Props) {
         <div style={{
           position: 'absolute', bottom: 18, left: '50%', transform: 'translateX(-50%)',
           fontFamily: "'Press Start 2P', monospace", fontSize: 8,
-          background: 'rgba(0,0,0,0.86)', border: '3px solid #83d68e', color: '#b8ffbe',
+          background: 'rgba(0,0,0,0.86)', border: '3px solid #f7c97a', color: '#ffe59a',
           padding: '8px 12px', whiteSpace: 'nowrap', zIndex: 30,
         }}>
           Press [E] · {nearInteractable.chinese}
@@ -88,21 +88,21 @@ export function SupermarketInterior({ onExit, onSave, onGainXp }: Props) {
       {activeItem && (
         <div style={{
           position: 'absolute', left: '50%', bottom: 54, transform: 'translateX(-50%)',
-          minWidth: 360, maxWidth: 520, background: 'rgba(17,24,28,0.94)',
-          border: '4px solid #e2bc73', color: '#f5e7ca', padding: '14px 16px', zIndex: 42,
+          minWidth: 360, maxWidth: 520, background: 'rgba(28,18,8,0.96)',
+          border: '4px solid #c8a86a', color: '#f5e7ca', padding: '14px 16px', zIndex: 42,
           fontFamily: "'Press Start 2P', monospace", lineHeight: 1.8,
         }}>
           <div style={{ fontSize: 14, color: '#ffe59a', marginBottom: 6 }}>{activeItem.chinese}</div>
-          <div style={{ fontSize: 8, color: '#90d7ff', marginBottom: 8 }}>{activeItem.pinyin}</div>
-          <div style={{ fontSize: 7, color: '#d9f4d8', marginBottom: 10 }}>{activeItem.description}</div>
+          <div style={{ fontSize: 8, color: '#f0c070', marginBottom: 8 }}>{activeItem.pinyin}</div>
+          <div style={{ fontSize: 7, color: '#e8d4a0', marginBottom: 10 }}>{activeItem.description}</div>
           <div style={{ display: 'flex', gap: 8 }}>
             <button onClick={handleSave} style={{
               fontFamily: "'Press Start 2P', monospace", fontSize: 7, padding: '6px 10px',
-              background: '#2a6a2a', border: '2px solid #4aaa4a', color: '#b8ffbe', cursor: 'pointer',
+              background: '#4a2a08', border: '2px solid #c8a86a', color: '#ffe59a', cursor: 'pointer',
             }}>+ Notebook</button>
             <button onClick={() => setActiveItem(null)} style={{
               fontFamily: "'Press Start 2P', monospace", fontSize: 7, padding: '6px 10px',
-              background: '#1a1a2a', border: '2px solid #4a4a8a', color: '#aaaaff', cursor: 'pointer',
+              background: '#1a1a1a', border: '2px solid #555', color: '#aaa', cursor: 'pointer',
             }}>Close</button>
           </div>
         </div>

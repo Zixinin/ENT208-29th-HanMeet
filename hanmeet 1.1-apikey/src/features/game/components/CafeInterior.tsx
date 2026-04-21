@@ -1,7 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { InteriorItem } from '../../../types/domain';
-import { CAFE_ITEMS } from '../data/cafeVocab';
-import { VocabPopup } from './VocabPopup';
+import { CAFE_ENGINE_CONFIG } from '../data/cafeLayout';
+import { useTileEngine } from '../hooks/useTileEngine';
+import { InteractableConfig } from '../../../types/tileEngine';
+
+const VIRTUAL_WIDTH = 1280;
+const VIRTUAL_HEIGHT = 720;
 
 interface Props {
   onExit: () => void;
@@ -10,158 +14,98 @@ interface Props {
 }
 
 export function CafeInterior({ onExit, onSave, onGainXp }: Props) {
-  const [selectedItem, setSelectedItem] = useState<InteriorItem | null>(null);
+  const { canvasRef, containerRef, scale, nearInteractable } = useTileEngine(CAFE_ENGINE_CONFIG);
+  const [activeItem, setActiveItem] = useState<InteractableConfig | null>(null);
   const [discovered, setDiscovered] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !selectedItem) onExit();
+      const key = e.key.toLowerCase();
+      if (key === 'escape') { if (activeItem) { setActiveItem(null); } else { onExit(); } return; }
+      if (key === 'e' && nearInteractable) {
+        setActiveItem(nearInteractable);
+        if (!discovered.has(nearInteractable.id)) {
+          onGainXp(10);
+          setDiscovered((d: Set<string>) => new Set([...d, nearInteractable.id]));
+        }
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onExit, selectedItem]);
+  }, [nearInteractable, activeItem, onExit, discovered, onGainXp]);
 
-  const speak = (text: string) => {
-    const utt = new SpeechSynthesisUtterance(text);
-    utt.lang = 'zh-CN';
-    speechSynthesis.speak(utt);
-  };
-
-  const handleClick = (item: InteriorItem) => {
-    setSelectedItem(item);
-    if (!discovered.has(item.id)) {
-      onGainXp(item.xp);
-      setDiscovered((d) => new Set([...d, item.id]));
-    }
+  const handleSave = () => {
+    if (!activeItem) return;
+    onSave({
+      id: activeItem.id,
+      spaceId: 'cafe',
+      chinese: activeItem.chinese,
+      pinyin: activeItem.pinyin,
+      english: activeItem.english ?? '',
+      xp: 10,
+      icon: '☕',
+      x: activeItem.tileX,
+      y: activeItem.tileY,
+    });
+    setActiveItem(null);
   };
 
   return (
-    <div style={{
-      width: '100%',
-      height: '100%',
-      position: 'relative',
-      overflow: 'hidden',
-      background: '#2d1b0e',
-      fontFamily: "'Press Start 2P', monospace",
-      imageRendering: 'pixelated',
-    }}>
-      {/* Warm wood floor stripes */}
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        backgroundImage: 'repeating-linear-gradient(90deg, rgba(255,200,100,0.06) 0px, rgba(255,200,100,0.06) 1px, transparent 1px, transparent 60px)',
-        backgroundSize: '60px 100%',
-      }} />
+    <div ref={containerRef} style={{ width: '100%', height: '100%', overflow: 'hidden', position: 'relative', background: '#001a14' }}>
+      <canvas
+        ref={canvasRef}
+        width={VIRTUAL_WIDTH}
+        height={VIRTUAL_HEIGHT}
+        style={{
+          position: 'absolute', left: '50%', top: '50%',
+          transform: `translate(-50%, -50%) scale(${scale})`,
+          transformOrigin: 'center', imageRendering: 'pixelated',
+        }}
+      />
 
-      {/* Back wall - warm brick */}
       <div style={{
-        position: 'absolute',
-        top: 0, left: 0, right: 0,
-        height: '40%',
-        background: 'linear-gradient(180deg, #8b3a1a 0%, #a04820 100%)',
-        borderBottom: '6px solid #5a2010',
-      }} />
-
-      {/* Counter */}
-      <div style={{
-        position: 'absolute',
-        top: 80,
-        left: '15%',
-        width: '70%',
-        height: 60,
-        background: '#6b3a10',
-        border: '4px solid #3a1808',
-        boxShadow: '0 4px 0 #1a0804',
+        position: 'absolute', left: 12, top: 12, zIndex: 10, pointerEvents: 'none',
+        fontFamily: "'Press Start 2P', monospace", fontSize: 7,
+        color: 'rgba(255,255,255,0.7)', background: 'rgba(0,0,0,0.5)',
+        border: '2px solid rgba(0,0,0,0.4)', padding: '6px 8px', lineHeight: 1.8,
       }}>
-        <div style={{
-          position: 'absolute', top: 4, left: 8,
-          fontSize: 9, color: 'var(--pixel-yellow)',
-          fontFamily: "'Press Start 2P', monospace",
-        }}>
-          ☕ MENU: 菜单
-        </div>
+        咖啡厅 — Café<br />
+        WASD = MOVE · E = INSPECT<br />
+        ESC = EXIT
       </div>
 
-      {/* Tables */}
-      {[[120, 280], [340, 280], [560, 280], [240, 400], [460, 400]].map(([x, y], i) => (
-        <div key={i} style={{
-          position: 'absolute', left: x, top: y,
-          width: 80, height: 60,
-          background: '#8b5a20',
-          border: '3px solid #5a3010',
-          boxShadow: '3px 3px 0 #000',
-        }} />
-      ))}
+      {nearInteractable && !activeItem && (
+        <div style={{
+          position: 'absolute', bottom: 18, left: '50%', transform: 'translateX(-50%)',
+          fontFamily: "'Press Start 2P', monospace", fontSize: 8,
+          background: 'rgba(0,0,0,0.86)', border: '3px solid #7affdb', color: '#b8fff4',
+          padding: '8px 12px', whiteSpace: 'nowrap', zIndex: 30,
+        }}>
+          Press [E] · {nearInteractable.chinese}
+        </div>
+      )}
 
-      {/* Items — percent-based positioning */}
-      {CAFE_ITEMS.map((item) => (
-        <div
-          key={item.id}
-          onClick={() => handleClick(item)}
-          style={{
-            position: 'absolute',
-            left: `${item.x}%`,
-            top: `${item.y}%`,
-            cursor: 'pointer',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 2,
-            zIndex: 10,
-          }}
-        >
-          <div
-            style={{
-              width: 44, height: 44,
-              background: discovered.has(item.id) ? '#4a7a3a' : '#d4a420',
-              border: '3px solid #000',
-              boxShadow: '3px 3px 0 #000',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 22,
-              position: 'relative',
-              transition: 'transform 0.1s',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.1) translateY(-2px)')}
-            onMouseLeave={(e) => (e.currentTarget.style.transform = 'none')}
-          >
-            {item.icon}
-            {discovered.has(item.id) && (
-              <div style={{
-                position: 'absolute', top: -6, right: -6,
-                background: 'var(--pixel-green)', border: '2px solid #000',
-                borderRadius: '50%', width: 14, height: 14,
-                fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>✓</div>
-            )}
-          </div>
-          <div style={{
-            fontSize: 6, color: '#fff',
-            background: 'rgba(0,0,0,0.7)',
-            padding: '2px 4px', border: '1px solid var(--pixel-border)',
-            whiteSpace: 'nowrap',
-          }}>
-            {item.chinese}
+      {activeItem && (
+        <div style={{
+          position: 'absolute', left: '50%', bottom: 54, transform: 'translateX(-50%)',
+          minWidth: 360, maxWidth: 520, background: 'rgba(0,20,18,0.96)',
+          border: '4px solid #7affdb', color: '#e0fff8', padding: '14px 16px', zIndex: 42,
+          fontFamily: "'Press Start 2P', monospace", lineHeight: 1.8,
+        }}>
+          <div style={{ fontSize: 14, color: '#7affdb', marginBottom: 6 }}>{activeItem.chinese}</div>
+          <div style={{ fontSize: 8, color: '#b8fff4', marginBottom: 8 }}>{activeItem.pinyin}</div>
+          <div style={{ fontSize: 7, color: '#d0f8f0', marginBottom: 10 }}>{activeItem.description}</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={handleSave} style={{
+              fontFamily: "'Press Start 2P', monospace", fontSize: 7, padding: '6px 10px',
+              background: '#083030', border: '2px solid #7affdb', color: '#7affdb', cursor: 'pointer',
+            }}>+ Notebook</button>
+            <button onClick={() => setActiveItem(null)} style={{
+              fontFamily: "'Press Start 2P', monospace", fontSize: 7, padding: '6px 10px',
+              background: '#1a1a1a', border: '2px solid #555', color: '#aaa', cursor: 'pointer',
+            }}>Close</button>
           </div>
         </div>
-      ))}
-
-      <button onClick={onExit} style={{
-        position: 'absolute', top: 12, left: 12, zIndex: 30,
-        fontFamily: "'Press Start 2P', monospace", fontSize: 8,
-        padding: '8px 12px', background: 'var(--pixel-accent)',
-        border: '3px solid #000', boxShadow: '3px 3px 0 #000',
-        color: '#fff', cursor: 'pointer',
-      }}>← EXIT</button>
-
-      <div style={{
-        position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)',
-        fontSize: 10, color: 'var(--pixel-yellow)',
-        background: 'rgba(0,0,0,0.85)',
-        border: '3px solid var(--pixel-border)', padding: '6px 14px', zIndex: 30,
-      }}>咖啡店 CAFÉ</div>
-
-      {selectedItem && (
-        <VocabPopup item={selectedItem} onClose={() => setSelectedItem(null)} onSave={onSave} onSpeak={speak} />
       )}
     </div>
   );

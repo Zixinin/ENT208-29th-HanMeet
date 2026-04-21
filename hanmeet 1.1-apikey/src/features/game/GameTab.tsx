@@ -4,9 +4,10 @@ import { CityMap } from './components/CityMap';
 import { SupermarketInterior } from './components/SupermarketInterior';
 import { ClassroomInterior } from './components/ClassroomInterior';
 import { CafeInterior } from './components/CafeInterior';
+import { HouseInterior } from './components/HouseInterior';
 import { FlashcardQuiz } from './components/FlashcardQuiz';
 
-type Scene = 'city' | 'supermarket' | 'school' | 'cafe';
+type Scene = 'city' | 'supermarket' | 'school' | 'cafe' | 'house';
 
 interface GameTabProps {
   level: number;
@@ -92,6 +93,13 @@ export function GameTab({
       )}
       {scene === 'cafe' && (
         <CafeInterior
+          onExit={() => setScene('city')}
+          onSave={handleSave}
+          onGainXp={onGainXp}
+        />
+      )}
+      {scene === 'house' && (
+        <HouseInterior
           onExit={() => setScene('city')}
           onSave={handleSave}
           onGainXp={onGainXp}
