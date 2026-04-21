@@ -1,13 +1,34 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { PlayerState } from '../../../types/domain';
-import { TILE_SIZE, CITY_COLS, CITY_ROWS, isBlocked } from '../data/cityLayout';
+import {
+  TILE_SIZE as DEFAULT_TILE_SIZE,
+  CITY_COLS as DEFAULT_COLS,
+  CITY_ROWS as DEFAULT_ROWS,
+  isBlocked as defaultIsBlocked,
+} from '../data/cityLayout';
 
 const SPEED = 3;
 
-export function usePlayerMovement(initialX = 18, initialY = 12) {
+interface MovementOptions {
+  cols?: number;
+  rows?: number;
+  tileSize?: number;
+  isBlockedFn?: (tileX: number, tileY: number) => boolean;
+}
+
+export function usePlayerMovement(
+  initialX = 18,
+  initialY = 12,
+  options?: MovementOptions,
+) {
+  const cols = options?.cols ?? DEFAULT_COLS;
+  const rows = options?.rows ?? DEFAULT_ROWS;
+  const tileSize = options?.tileSize ?? DEFAULT_TILE_SIZE;
+  const isBlockedFn = options?.isBlockedFn ?? defaultIsBlocked;
+
   const [player, setPlayer] = useState<PlayerState>({
-    x: initialX * TILE_SIZE,
-    y: initialY * TILE_SIZE,
+    x: initialX * tileSize,
+    y: initialY * tileSize,
     facing: 'down',
     moving: false,
     frame: 0,
@@ -17,8 +38,8 @@ export function usePlayerMovement(initialX = 18, initialY = 12) {
   const frameRef = useRef<number>(0);
   const frameCountRef = useRef(0);
 
-  const worldW = CITY_COLS * TILE_SIZE;
-  const worldH = CITY_ROWS * TILE_SIZE;
+  const worldW = cols * tileSize;
+  const worldH = rows * tileSize;
 
   useEffect(() => {
     const onDown = (e: KeyboardEvent) => {
@@ -37,7 +58,7 @@ export function usePlayerMovement(initialX = 18, initialY = 12) {
   useEffect(() => {
     const loop = () => {
       frameCountRef.current++;
-      setPlayer((prev) => {
+      setPlayer((prev: PlayerState) => {
         let dx = 0, dy = 0;
         const k = keys.current;
         if (k.has('arrowup') || k.has('w')) dy = -SPEED;
@@ -55,9 +76,9 @@ export function usePlayerMovement(initialX = 18, initialY = 12) {
         let ny = Math.max(0, Math.min(worldH - charH, prev.y + dy));
 
         const tileCheck = (px: number, py: number) => {
-          const tx = Math.floor(px / TILE_SIZE);
-          const ty = Math.floor(py / TILE_SIZE);
-          return isBlocked(tx, ty);
+          const tx = Math.floor(px / tileSize);
+          const ty = Math.floor(py / tileSize);
+          return isBlockedFn(tx, ty);
         };
 
         if (dx !== 0) {
@@ -81,8 +102,8 @@ export function usePlayerMovement(initialX = 18, initialY = 12) {
   }, [worldW, worldH]);
 
   const teleport = useCallback((tileX: number, tileY: number) => {
-    setPlayer((p) => ({ ...p, x: tileX * TILE_SIZE, y: tileY * TILE_SIZE }));
-  }, []);
+    setPlayer((p: PlayerState) => ({ ...p, x: tileX * tileSize, y: tileY * tileSize }));
+  }, [tileSize]);
 
   return { player, teleport };
 }
