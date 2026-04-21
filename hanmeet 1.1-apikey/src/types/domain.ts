@@ -1,7 +1,7 @@
 export type TabId = 'game' | 'notebook' | 'dictionary' | 'profile';
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
-export type SpaceId = 'classroom' | 'supermarket' | 'dorm' | 'cafeteria' | 'cafe';
+export type SpaceId = 'classroom' | 'supermarket' | 'dorm' | 'cafeteria' | 'cafe' | 'house';
 export type ItemRarity = 'common' | 'hidden';
 
 export type TileType = 'grass' | 'path' | 'road' | 'sidewalk' | 'tree' | 'wall' | 'door' | 'water' | 'flower' | 'farmland' | 'cliff';
@@ -102,4 +102,16 @@ export interface InteriorItem {
   icon: string;
   x: number;
   y: number;
+}
+
+export interface RoomItem {
+  id: string;
+  chinese: string;
+  pinyin: string;
+  english: string;
+  description: string;
+  icon: string;
+  xp: number;
+  xPct: number;
+  yPct: number;
 }
