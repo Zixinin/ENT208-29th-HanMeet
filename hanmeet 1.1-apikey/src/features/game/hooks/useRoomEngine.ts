@@ -1,26 +1,39 @@
 import { useRef, useEffect, useState, useMemo } from 'react';
 import { RoomItem } from '../../../types/domain';
+import { AVATAR_PRESETS } from '../data';
 import { usePlayerMovement } from './usePlayerMovement';
-
-const SUNNYSIDE = '/assets/gamepack/Sunnyside_World_ASSET_PACK_V2.1/Sunnyside_World_Assets';
-const IDLE_SRC = `${SUNNYSIDE}/Characters/Human/IDLE/base_idle_strip9.png`;
-const WALK_SRC = `${SUNNYSIDE}/Characters/Human/WALKING/base_walk_strip8.png`;
 
 export const ROOM_W = 1280;
 export const ROOM_H = 720;
 const PROXIMITY_PX = 70;
 
+// Character sprite sheets: 4 idle frames × 16×32 px each (strip is 64×32)
+const FRAME_W = 16;
+const FRAME_H = 32;
+const FRAME_COUNT = 4;
+const RENDER_W = 64;
+const RENDER_H = 128;
+
 interface UseRoomEngineOptions {
   items: RoomItem[];
+  avatarPresetId?: string;
 }
 
-export function useRoomEngine({ items }: UseRoomEngineOptions) {
+export function useRoomEngine({ items, avatarPresetId }: UseRoomEngineOptions) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const images = useRef<Record<string, HTMLImageElement>>({});
   const rafRef = useRef<number>(0);
   const animTickRef = useRef(0);
   const [scale, setScale] = useState(1);
+
+  const spriteSrc = useMemo(() => {
+    const preset = AVATAR_PRESETS.find((a) => a.id === avatarPresetId) ?? AVATAR_PRESETS[0];
+    return preset.spritePath;
+  }, [avatarPresetId]);
+
+  const spriteSrcRef = useRef(spriteSrc);
+  spriteSrcRef.current = spriteSrc;
 
   const { player } = usePlayerMovement(ROOM_W / 2, ROOM_H / 2, {
     cols: ROOM_W,
@@ -29,13 +42,13 @@ export function useRoomEngine({ items }: UseRoomEngineOptions) {
     isBlockedFn: () => false,
   });
 
-  // Preload character sprite sheets
+  // Preload all character sprites upfront
   useEffect(() => {
-    [IDLE_SRC, WALK_SRC].forEach(src => {
-      if (!images.current[src]) {
+    AVATAR_PRESETS.forEach(({ spritePath }) => {
+      if (!images.current[spritePath]) {
         const img = new Image();
-        img.src = src;
-        images.current[src] = img;
+        img.src = spritePath;
+        images.current[spritePath] = img;
       }
     });
   }, []);
@@ -52,7 +65,6 @@ export function useRoomEngine({ items }: UseRoomEngineOptions) {
     return () => obs.disconnect();
   }, []);
 
-  // Draw loop: renders character sprite on transparent canvas each frame
   const playerRef = useRef(player);
   playerRef.current = player;
 
@@ -69,18 +81,16 @@ export function useRoomEngine({ items }: UseRoomEngineOptions) {
       ctx.clearRect(0, 0, ROOM_W, ROOM_H);
       ctx.imageSmoothingEnabled = false;
 
-      const idleFrames = 9, walkFrames = 8;
-      const frameCount = p.moving ? walkFrames : idleFrames;
-      const animFrame = Math.floor(tick / 4) % frameCount;
-      const src = p.moving ? WALK_SRC : IDLE_SRC;
-      const FRAME_W = 16, FRAME_H = 32;
-      const RENDER_W = 32, RENDER_H = 64;
-
+      // Actual sprite frame layout: 0=right, 1=down, 2=left, 3=up
+      const FACING_FRAME: Record<string, number> = { down: 1, left: 2, right: 0, up: 3 };
+      const animFrame = FACING_FRAME[p.facing] ?? 0;
+      const src = spriteSrcRef.current;
       const img = images.current[src];
+
       if (img?.complete && img.naturalWidth) {
         ctx.fillStyle = 'rgba(0,0,0,0.2)';
         ctx.beginPath();
-        ctx.ellipse(p.x + RENDER_W / 2, p.y + RENDER_H - 4, 12, 6, 0, 0, Math.PI * 2);
+        ctx.ellipse(p.x + RENDER_W / 2, p.y + RENDER_H - 4, 18, 8, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.drawImage(img, animFrame * FRAME_W, 0, FRAME_W, FRAME_H, p.x, p.y - RENDER_H / 2, RENDER_W, RENDER_H);
       }
@@ -90,12 +100,12 @@ export function useRoomEngine({ items }: UseRoomEngineOptions) {
 
     rafRef.current = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(rafRef.current);
-  }, []); // stable: uses playerRef.current, never restarts
+  }, []); // stable: uses refs, never restarts
 
   // Proximity: find the closest item within PROXIMITY_PX of the character centre
   const nearItem = useMemo<RoomItem | null>(() => {
-    const px = player.x + 16;
-    const py = player.y + 32;
+    const px = player.x + RENDER_W / 2;
+    const py = player.y + RENDER_H / 2;
     let closest: RoomItem | null = null;
     let minDist = PROXIMITY_PX;
     for (const item of items) {

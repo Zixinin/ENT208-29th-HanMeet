@@ -13,7 +13,7 @@ export interface StoredState {
 export const defaultState: StoredState = {
   profile: {
     username: 'Player',
-    avatarPresetId: 'red-fox',
+    avatarPresetId: 'adam',
     outfitColor: '#10b981',
   },
   progress: {

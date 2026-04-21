@@ -33,12 +33,13 @@ function toInteriorItem(item: RoomItem, roomId: RoomId): InteriorItem {
 interface Props {
   roomId: RoomId;
   items: RoomItem[];
+  avatarPresetId?: string;
   onBack: () => void;
   onSave: (item: InteriorItem) => void;
 }
 
-export function RoomInterior({ roomId, items, onBack, onSave }: Props) {
-  const { canvasRef, containerRef, scale, nearItem } = useRoomEngine({ items });
+export function RoomInterior({ roomId, items, avatarPresetId, onBack, onSave }: Props) {
+  const { canvasRef, containerRef, scale, nearItem } = useRoomEngine({ items, avatarPresetId });
   const [activeItem, setActiveItem] = useState<RoomItem | null>(null);
 
   useEffect(() => {

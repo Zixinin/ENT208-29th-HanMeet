@@ -3,16 +3,10 @@ import { AvatarPreset, Space, SpaceId, VocabularyItem } from '../../types/domain
 export const SPACE_ORDER: SpaceId[] = ['classroom', 'supermarket', 'dorm', 'cafeteria'];
 
 export const AVATAR_PRESETS: AvatarPreset[] = [
-  { id: 'red-fox', name: 'Red Fox', emoji: '🦊', accent: '#ef4444' },
-  { id: 'mint-cat', name: 'Mint Cat', emoji: '🐱', accent: '#10b981' },
-  { id: 'sky-bird', name: 'Sky Bird', emoji: '🐦', accent: '#0ea5e9' },
-  { id: 'sun-lion', name: 'Sun Lion', emoji: '🦁', accent: '#f59e0b' },
-  { id: 'violet-panda', name: 'Violet Panda', emoji: '🐼', accent: '#8b5cf6' },
-  { id: 'rose-rabbit', name: 'Rose Rabbit', emoji: '🐰', accent: '#ec4899' },
-  { id: 'teal-frog', name: 'Teal Frog', emoji: '🐸', accent: '#14b8a6' },
-  { id: 'amber-bear', name: 'Amber Bear', emoji: '🐻', accent: '#d97706' },
-  { id: 'indigo-whale', name: 'Indigo Whale', emoji: '🐳', accent: '#6366f1' },
-  { id: 'green-turtle', name: 'Green Turtle', emoji: '🐢', accent: '#22c55e' },
+  { id: 'adam',   name: 'Adam',   spritePath: '/assets/gamepack/Player/Adam_idle_16x16.png' },
+  { id: 'alex',   name: 'Alex',   spritePath: '/assets/gamepack/Player/Alex_idle_16x16.png' },
+  { id: 'amelia', name: 'Amelia', spritePath: '/assets/gamepack/Player/Amelia_idle_16x16.png' },
+  { id: 'bob',    name: 'Bob',    spritePath: '/assets/gamepack/Player/Bob_idle_16x16.png' },
 ];
 
 export const SPACES: Space[] = [

@@ -69,7 +69,7 @@ export async function pullCloudState(userId: string): Promise<PullCloudStateResu
   const profile = profileRes.data
     ? {
         username: profileRes.data.username || 'Player',
-        avatarPresetId: profileRes.data.avatar_preset_id || 'red-fox',
+        avatarPresetId: profileRes.data.avatar_preset_id || 'adam',
         outfitColor: profileRes.data.outfit_color || '#10b981',
       }
     : undefined;

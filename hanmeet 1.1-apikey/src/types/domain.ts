@@ -9,8 +9,7 @@ export type TileType = 'grass' | 'path' | 'road' | 'sidewalk' | 'tree' | 'wall' 
 export interface AvatarPreset {
   id: string;
   name: string;
-  emoji: string;
-  accent: string;
+  spritePath: string;
 }
 
 export interface VocabularyItem {

@@ -32,7 +32,7 @@ const ROOM_ITEMS: Record<RoomId, RoomItem[]> = {
   house:       HOUSE_ROOM_ITEMS,
 };
 
-export function GameTab({ onGainXp, onAddNotebook, notebook, onGradeNotebook }: GameTabProps) {
+export function GameTab({ onGainXp, onAddNotebook, notebook, onGradeNotebook, avatarPresetId }: GameTabProps) {
   const [scene, setScene] = useState<Scene>('select');
   const [quizOpen, setQuizOpen] = useState(false);
 
@@ -72,6 +72,7 @@ export function GameTab({ onGainXp, onAddNotebook, notebook, onGradeNotebook }: 
         <RoomInterior
           roomId={scene}
           items={ROOM_ITEMS[scene]}
+          avatarPresetId={avatarPresetId}
           onBack={() => setScene('select')}
           onSave={handleSave}
         />
