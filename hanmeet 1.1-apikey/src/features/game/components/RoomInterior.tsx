@@ -30,6 +30,54 @@ function toInteriorItem(item: RoomItem, roomId: RoomId): InteriorItem {
   };
 }
 
+function ItemGlowLayer({ items, nearItem }: { items: RoomItem[]; nearItem: RoomItem | null }) {
+  return (
+    <>
+      {items.map(item => {
+        const isNear = nearItem?.id === item.id;
+        return (
+          <div
+            key={item.id}
+            style={{
+              position: 'absolute',
+              left: `${item.xPct}%`,
+              top: `${item.yPct}%`,
+              transform: 'translate(-50%, -50%)',
+              width: 24,
+              height: 24,
+              borderRadius: '50%',
+              boxShadow: isNear
+                ? '0 0 20px 10px rgba(255, 220, 80, 0.75)'
+                : '0 0 12px 6px rgba(255, 220, 80, 0.25)',
+              pointerEvents: 'none',
+              zIndex: 5,
+            }}
+          >
+            {isNear && (
+              <div style={{
+                position: 'absolute',
+                bottom: '100%',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                marginBottom: 14,
+                fontFamily: "'Press Start 2P', monospace",
+                fontSize: 7,
+                color: '#ffffff',
+                background: 'rgba(0,0,0,0.75)',
+                padding: '3px 6px',
+                whiteSpace: 'nowrap',
+                borderRadius: 2,
+              }}>
+                {item.chinese}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
 interface Props {
   roomId: RoomId;
   items: RoomItem[];
@@ -80,6 +128,7 @@ export function RoomInterior({ roomId, items, avatarPresetId, onBack, onSave }: 
             userSelect: 'none', pointerEvents: 'none',
           }}
         />
+        <ItemGlowLayer items={items} nearItem={nearItem} />
         <canvas
           ref={canvasRef}
           width={ROOM_W}
