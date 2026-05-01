@@ -12,9 +12,9 @@ export const CAFE_ROOM_ITEMS: RoomItem[] = [
   { id: 'cafe-barrel-8', chinese: '木桶', pinyin: 'mùtǒng', english: 'barrel', description: '存放咖啡豆的木质容器。', icon: '🪣', xp: 10, xPct: 39, yPct: 21 },
 
   // ── Wall posters (3 frames on top wall) ──────────────────────────────
-  { id: 'cafe-poster-1', chinese: '画', pinyin: 'huà', english: 'painting', description: '挂在墙上的装饰画。', icon: '🖼️', xp: 10, xPct: 22, yPct: 6 },
-  { id: 'cafe-poster-2', chinese: '画', pinyin: 'huà', english: 'painting', description: '挂在墙上的装饰画。', icon: '🖼️', xp: 10, xPct: 36, yPct: 6 },
-  { id: 'cafe-poster-3', chinese: '画', pinyin: 'huà', english: 'painting', description: '挂在墙上的装饰画。', icon: '🖼️', xp: 10, xPct: 48, yPct: 6 },
+  { id: 'cafe-painting-1', chinese: '画', pinyin: 'huà', english: 'painting', description: '挂在墙上的装饰画。', icon: '🖼️', xp: 10, xPct: 22, yPct: 6 },
+  { id: 'cafe-painting-2', chinese: '画', pinyin: 'huà', english: 'painting', description: '挂在墙上的装饰画。', icon: '🖼️', xp: 10, xPct: 36, yPct: 6 },
+  { id: 'cafe-painting-3', chinese: '画', pinyin: 'huà', english: 'painting', description: '挂在墙上的装饰画。', icon: '🖼️', xp: 10, xPct: 48, yPct: 6 },
 
   // ── Wall lamps (2) ───────────────────────────────────────────────────
   { id: 'cafe-lamp-1', chinese: '壁灯', pinyin: 'bìdēng', english: 'wall lamp', description: '安装在墙上的照明灯。', icon: '💡', xp: 10, xPct: 13, yPct: 9 },

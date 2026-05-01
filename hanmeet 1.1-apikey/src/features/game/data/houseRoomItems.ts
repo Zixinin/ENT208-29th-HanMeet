@@ -18,7 +18,7 @@ export const HOUSE_ROOM_ITEMS: RoomItem[] = [
   { id: 'house-armchair',    chinese: '扶手椅', pinyin: 'fúshǒu yǐ', english: 'armchair',  description: '有扶手的舒适椅子。',          icon: '🛋️', xp: 10, xPct: 82, yPct: 22 },
   { id: 'house-bookshelf-1', chinese: '书架',   pinyin: 'shūjià',    english: 'bookshelf', description: '放书的架子。',                icon: '📚', xp: 10, xPct: 87, yPct: 14 },
   { id: 'house-fireplace',   chinese: '壁炉',   pinyin: 'bìlú',      english: 'fireplace', description: '燃烧木材取暖的炉子。',        icon: '🔥', xp: 15, xPct: 88, yPct: 34 },
-  { id: 'house-tv-wall',     chinese: '电视',   pinyin: 'diànshì',   english: 'TV',        description: '用来看节目的电子设备。',      icon: '📺', xp: 10, xPct: 78, yPct: 10 },
+  { id: 'house-remote',      chinese: '遥控器', pinyin: 'yáokòng qì', english: 'remote control', description: '用来控制电视的装置。',     icon: '📱', xp: 10, xPct: 78, yPct: 10 },
   { id: 'house-plant-7',     chinese: '植物',   pinyin: 'zhíwù',     english: 'plant',     description: '摆放在家里的绿色植物。',      icon: '🌿', xp: 10, xPct: 72, yPct: 28 },
 
   // ── Main living room (centre) ─────────────────────────────────────────
