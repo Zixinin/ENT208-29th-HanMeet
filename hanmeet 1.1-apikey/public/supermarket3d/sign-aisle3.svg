@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="100" viewBox="0 0 300 100">
+  <rect x="4" y="4" width="292" height="92" rx="8" fill="#111827" stroke="#93c5fd" stroke-width="6"/>
+  <text x="150" y="42" fill="#93c5fd" text-anchor="middle" font-family="monospace" font-size="22" font-weight="700">AISLE 3</text>
+  <text x="150" y="72" fill="#fef08a" text-anchor="middle" font-family="sans-serif" font-size="26" font-weight="700">热卖区</text>
+</svg>

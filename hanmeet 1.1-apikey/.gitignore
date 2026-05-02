@@ -7,4 +7,45 @@ coverage/
 .env*
 !.env.example
 .claude
+.superpowers/
+superpower/
 .worktrees/
+
+# Build & compiler caches
+.vite/
+.turbo/
+.eslintcache
+.next/
+.nuxt/
+
+# IDE & editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+
+# Tool & test files
+.playwright-mcp/
+junit.xml
+*.trace
+
+# OS files
+Thumbs.db
+
+# Unused asset libraries (large asset packs not referenced in code)
+public/assets/
+
+# Python virtual environments
+venv/
+env/
+hanmeet/
+.venv/
+
+# Word documents & technical reports
+*.docx
+~$*.docx
+Technical_Report.md
+Session_X_Group_Y_TechnicalDoc.docx
