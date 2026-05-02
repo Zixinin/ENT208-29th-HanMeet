@@ -2,13 +2,7 @@ export type DifficultyLevel = 1 | 2 | 3;
 
 export type ChallengeMode = 'shopping-list' | 'timed-sprint' | 'recipe-combo';
 
-export type TaskKind =
-  | 'find-item'
-  | 'pinyin-quiz'
-  | 'multiple-choice'
-  | 'shopping-list'
-  | 'timed-sprint'
-  | 'recipe-combo';
+export type TaskKind = Task['kind'];
 
 export interface FindTask {
   kind: 'find-item';
