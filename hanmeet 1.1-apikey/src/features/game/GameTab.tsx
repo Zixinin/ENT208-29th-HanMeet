@@ -8,7 +8,7 @@ import { CAFE_ROOM_ITEMS } from './data/cafeRoomItems';
 import { SUPERMARKET_ROOM_ITEMS } from './data/supermarketRoomItems';
 import { HOUSE_ROOM_ITEMS } from './data/houseRoomItems';
 import { ReviewGrade } from '../notebook/reviewEngine';
-import { ActiveRoomInfo } from './types/tasks';
+import { ActiveRoomInfo, DifficultyLevel } from './types/tasks';
 
 type Scene = 'select' | RoomId;
 
@@ -39,6 +39,7 @@ export function GameTab({ onGainXp, onAddNotebook, notebook, onGradeNotebook, av
   const [scene, setScene] = useState<Scene>('select');
   const [quizOpen, setQuizOpen] = useState(false);
   const [foundCount, setFoundCount] = useState(0);
+  const [difficultyLevel, setDifficultyLevel] = useState<DifficultyLevel>(1);
 
   useEffect(() => {
     if (scene !== 'select') return;
@@ -78,7 +79,8 @@ export function GameTab({ onGainXp, onAddNotebook, notebook, onGradeNotebook, av
     <div style={{ width: '100%', height: 'calc(100vh - 120px)', position: 'relative' }}>
       {scene === 'select' && (
         <RoomSelect
-          onEnter={(id) => {
+          onEnter={(id, level) => {
+            setDifficultyLevel(level);
             setFoundCount(0);
             setScene(id);
             onActiveRoomChange({ roomId: id, found: 0, total: ROOM_ITEMS[id].length });
@@ -90,6 +92,7 @@ export function GameTab({ onGainXp, onAddNotebook, notebook, onGradeNotebook, av
         <RoomInterior
           roomId={scene}
           items={ROOM_ITEMS[scene]}
+          difficultyLevel={difficultyLevel}
           avatarPresetId={avatarPresetId}
           onBack={() => {
             setFoundCount(0);

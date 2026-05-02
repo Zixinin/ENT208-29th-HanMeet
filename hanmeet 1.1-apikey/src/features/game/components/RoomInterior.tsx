@@ -3,6 +3,9 @@ import { RoomItem, InteriorItem, SpaceId } from '../../../types/domain';
 import { useRoomEngine, ROOM_W, ROOM_H } from '../hooks/useRoomEngine';
 import { VocabPopup } from './VocabPopup';
 import type { RoomId } from './RoomSelect';
+import { RetroAudioSystem } from '../systems/audioSystem';
+import { speakMandarin } from '../systems/speechSystem';
+import type { DifficultyLevel } from '../types/tasks';
 
 const BG: Record<RoomId, string> = {
   cafe:        '/rooms/cafe-interior.jpeg',
@@ -30,30 +33,6 @@ function toInteriorItem(item: RoomItem, roomId: RoomId): InteriorItem {
   };
 }
 
-const AmbientGlows = React.memo(function AmbientGlows({ items }: { items: RoomItem[] }) {
-  return (
-    <>
-      {items.map(item => (
-        <div
-          key={item.id}
-          style={{
-            position: 'absolute',
-            left: `${item.xPct}%`,
-            top: `${item.yPct}%`,
-            transform: 'translate(-50%, -50%)',
-            width: 24,
-            height: 24,
-            borderRadius: '50%',
-            boxShadow: '0 0 12px 6px rgba(255, 220, 80, 0.25)',
-            pointerEvents: 'none',
-            zIndex: 5,
-          }}
-        />
-      ))}
-    </>
-  );
-});
-
 function NearItemHighlight({ nearItem }: { nearItem: RoomItem | null }) {
   if (!nearItem) return null;
   return (
@@ -62,13 +41,26 @@ function NearItemHighlight({ nearItem }: { nearItem: RoomItem | null }) {
       left: `${nearItem.xPct}%`,
       top: `${nearItem.yPct}%`,
       transform: 'translate(-50%, -50%)',
-      width: 24,
-      height: 24,
+      width: 34,
+      height: 34,
       borderRadius: '50%',
-      boxShadow: '0 0 20px 10px rgba(255, 220, 80, 0.75)',
+      boxShadow: '0 0 30px 14px rgba(255, 220, 80, 0.9)',
+      background: 'rgba(255, 220, 80, 0.2)',
       pointerEvents: 'none',
       zIndex: 6,
     }}>
+      <div style={{
+        position: 'absolute',
+        left: '50%',
+        top: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: 56,
+        height: 56,
+        borderRadius: '50%',
+        border: '2px solid rgba(255, 234, 140, 0.95)',
+        boxShadow: '0 0 18px 5px rgba(255, 215, 100, 0.7)',
+        animation: 'room-near-pulse 1.2s ease-in-out infinite',
+      }} />
       <div style={{
         position: 'absolute',
         bottom: '100%',
@@ -92,29 +84,33 @@ function NearItemHighlight({ nearItem }: { nearItem: RoomItem | null }) {
 interface Props {
   roomId: RoomId;
   items: RoomItem[];
+  difficultyLevel: DifficultyLevel;
   avatarPresetId?: string;
   onBack: () => void;
   onSave: (item: InteriorItem) => void;
 }
 
-export function RoomInterior({ roomId, items, avatarPresetId, onBack, onSave }: Props) {
+export function RoomInterior({ roomId, items, difficultyLevel: _difficultyLevel, avatarPresetId, onBack, onSave }: Props) {
   const { canvasRef, containerRef, scale, nearItem } = useRoomEngine({ items, avatarPresetId });
   const [activeItem, setActiveItem] = useState<RoomItem | null>(null);
+  const [audio] = useState(() => new RetroAudioSystem());
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
       if (key === 'escape') { setActiveItem(null); return; }
-      if (key === 'e' && nearItem && !activeItem) setActiveItem(nearItem);
+      if (key === 'e' && nearItem && !activeItem) {
+        audio.playUiClick();
+        setActiveItem(nearItem);
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [nearItem, activeItem]);
+  }, [nearItem, activeItem, audio]);
 
   const speak = (text: string) => {
-    const utt = new SpeechSynthesisUtterance(text);
-    utt.lang = 'zh-CN';
-    speechSynthesis.speak(utt);
+    audio.playUiClick();
+    speakMandarin(text);
   };
 
   return (
@@ -139,7 +135,13 @@ export function RoomInterior({ roomId, items, avatarPresetId, onBack, onSave }: 
             userSelect: 'none', pointerEvents: 'none',
           }}
         />
-        <AmbientGlows items={items} />
+        <style>{`
+          @keyframes room-near-pulse {
+            0% { transform: translate(-50%, -50%) scale(0.92); opacity: 0.7; }
+            50% { transform: translate(-50%, -50%) scale(1.08); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(0.92); opacity: 0.7; }
+          }
+        `}</style>
         <NearItemHighlight nearItem={nearItem} />
         <canvas
           ref={canvasRef}
@@ -151,7 +153,10 @@ export function RoomInterior({ roomId, items, avatarPresetId, onBack, onSave }: 
 
       {/* Back button — screen space, not scaled */}
       <button
-        onClick={onBack}
+        onClick={() => {
+          audio.playUiClick();
+          onBack();
+        }}
         style={{
           position: 'absolute', top: 12, left: 12, zIndex: 20,
           fontFamily: "'Press Start 2P', monospace", fontSize: 8,
@@ -189,7 +194,11 @@ export function RoomInterior({ roomId, items, avatarPresetId, onBack, onSave }: 
         <VocabPopup
           item={toInteriorItem(activeItem, roomId)}
           onClose={() => setActiveItem(null)}
-          onSave={(interiorItem) => { onSave(interiorItem); setActiveItem(null); }}
+          onSave={(interiorItem) => {
+            audio.playPickup();
+            onSave(interiorItem);
+            setActiveItem(null);
+          }}
           onSpeak={speak}
         />
       )}

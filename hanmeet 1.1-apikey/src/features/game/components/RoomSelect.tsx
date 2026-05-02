@@ -1,26 +1,33 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { DifficultyModal } from './DifficultyModal';
+import type { DifficultyLevel } from '../types/tasks';
 
 export type RoomId = 'cafe' | 'supermarket' | 'house';
 
 interface Room {
   id: RoomId;
   label: string;
+  emoji: string;
   chinese: string;
   pinyin: string;
   exteriorSrc: string;
 }
 
 const ROOMS: Room[] = [
-  { id: 'cafe',        label: 'Café',        chinese: '咖啡厅', pinyin: 'kāfēi tīng', exteriorSrc: '/rooms/cafe-exterior.jpeg' },
-  { id: 'supermarket', label: 'Supermarket', chinese: '超市',   pinyin: 'chāoshì',    exteriorSrc: '/rooms/supermarket-exterior.jpeg' },
-  { id: 'house',       label: 'House',       chinese: '住宅',   pinyin: 'zhùzhái',    exteriorSrc: '/rooms/house-exterior.jpeg' },
+  { id: 'cafe',        label: 'CAFÉ',        emoji: '☕', chinese: '咖啡厅', pinyin: 'kāfēi tīng', exteriorSrc: '/rooms/cafe-exterior.jpeg' },
+  { id: 'house',       label: 'HOUSE',       emoji: '🏠', chinese: '住宅',   pinyin: 'zhùzhái',    exteriorSrc: '/rooms/house-exterior.jpeg' },
+  { id: 'supermarket', label: 'SUPERMARKET', emoji: '🛒', chinese: '超市',   pinyin: 'chāoshì',    exteriorSrc: '/rooms/supermarket-exterior.jpeg' },
 ];
 
 interface Props {
-  onEnter: (roomId: RoomId) => void;
+  onEnter: (roomId: RoomId, level: DifficultyLevel) => void;
 }
 
 export function RoomSelect({ onEnter }: Props) {
+  const [pendingRoom, setPendingRoom] = useState<RoomId | null>(null);
+
+  const pendingRoomData = pendingRoom ? ROOMS.find(r => r.id === pendingRoom) : null;
+
   return (
     <div style={{
       width: '100%', height: '100%',
@@ -39,7 +46,7 @@ export function RoomSelect({ onEnter }: Props) {
         {ROOMS.map(room => (
           <button
             key={room.id}
-            onClick={() => onEnter(room.id)}
+            onClick={() => setPendingRoom(room.id)}
             style={{
               background: '#2a2a3e',
               border: '3px solid #4a4a6e',
@@ -82,6 +89,18 @@ export function RoomSelect({ onEnter }: Props) {
       }}>
         Q = Flashcard Quiz
       </div>
+
+      {pendingRoom && pendingRoomData && (
+        <DifficultyModal
+          roomLabel={pendingRoomData.label}
+          roomEmoji={pendingRoomData.emoji}
+          onSelect={(level) => {
+            onEnter(pendingRoom, level);
+            setPendingRoom(null);
+          }}
+          onCancel={() => setPendingRoom(null)}
+        />
+      )}
     </div>
   );
 }
