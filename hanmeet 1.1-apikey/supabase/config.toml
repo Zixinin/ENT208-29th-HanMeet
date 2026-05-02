@@ -1,0 +1,3 @@
+[functions.dictionary-proxy]
+verify_jwt = false
+
