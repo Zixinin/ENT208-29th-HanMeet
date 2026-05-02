@@ -16,6 +16,7 @@ function uniqueByKey<T>(items: T[], key: keyof T): T[] {
 }
 
 function pickRandom<T>(arr: T[]): T {
+  if (arr.length === 0) throw new Error('pickRandom called with empty array');
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
@@ -112,10 +113,14 @@ export function getNextChallengeMode(storedIndex: number): ChallengeMode {
 // and are intentionally not tested (no localStorage in Node.js test environment).
 
 export function readChallengeModeIndex(roomId: string): number {
-  return parseInt(localStorage.getItem(`hanmeet-lv3-mode-${roomId}`) ?? '0', 10);
+  const val = parseInt(localStorage.getItem(`hanmeet-lv3-mode-${roomId}`) ?? '0', 10);
+  return isNaN(val) ? 0 : val;
 }
 
 export function advanceChallengeModeIndex(roomId: string): void {
   const current = readChallengeModeIndex(roomId);
-  localStorage.setItem(`hanmeet-lv3-mode-${roomId}`, String((current + 1) % 3));
+  localStorage.setItem(
+    `hanmeet-lv3-mode-${roomId}`,
+    String((current + 1) % CHALLENGE_CYCLE.length),
+  );
 }

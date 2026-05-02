@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { generateFindTask, generateShoppingList, getNextChallengeMode, ROOM_COMBOS } from '../roomTaskSystem';
 import { CAFE_ROOM_ITEMS } from '../../data/cafeRoomItems';
 import { HOUSE_ROOM_ITEMS } from '../../data/houseRoomItems';
+import { SUPERMARKET_ROOM_ITEMS } from '../../data/supermarketRoomItems';
 
 // --- generateFindTask ---
 const cafeTask = generateFindTask(CAFE_ROOM_ITEMS, []);
@@ -37,5 +38,26 @@ ROOM_COMBOS.cafe.forEach(c => {
   assert.ok(c.name.length > 0);
   assert.ok(c.targetChinese.length >= 2);
 });
+
+// Verify every combo word exists in its room's item data
+const cafeWords = new Set(CAFE_ROOM_ITEMS.map(i => i.chinese));
+const houseWords = new Set(HOUSE_ROOM_ITEMS.map(i => i.chinese));
+const supermarketWords = new Set(SUPERMARKET_ROOM_ITEMS.map(i => i.chinese));
+
+ROOM_COMBOS.cafe.forEach(combo =>
+  combo.targetChinese.forEach(word =>
+    assert.ok(cafeWords.has(word), `Cafe combo word missing from data: ${word}`)
+  )
+);
+ROOM_COMBOS.house.forEach(combo =>
+  combo.targetChinese.forEach(word =>
+    assert.ok(houseWords.has(word), `House combo word missing from data: ${word}`)
+  )
+);
+ROOM_COMBOS.supermarket.forEach(combo =>
+  combo.targetChinese.forEach(word =>
+    assert.ok(supermarketWords.has(word), `Supermarket combo word missing from data: ${word}`)
+  )
+);
 
 console.log('roomTaskSystem tests passed ✓');
