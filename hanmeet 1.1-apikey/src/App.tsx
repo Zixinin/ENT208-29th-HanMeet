@@ -2,6 +2,7 @@ import React, { lazy, Suspense, useMemo, useState } from 'react';
 import { BookOpen, Gamepad2, Search, UserRound } from 'lucide-react';
 import { useAppState } from './store/useAppState';
 import { TabId, VocabularyItem } from './types/domain';
+import { ActiveRoomInfo } from './features/game/types/tasks';
 
 const AuthGate = lazy(async () => {
   const mod = await import('./features/auth/components/AuthGate');
@@ -37,6 +38,7 @@ const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>('game');
+  const [activeRoomInfo, setActiveRoomInfo] = React.useState<ActiveRoomInfo | null>(null);
   const {
     profile,
     progress,
@@ -87,9 +89,17 @@ export default function App() {
                 </p>
               </div>
               <div style={{ fontSize: '8px', color: 'var(--pixel-text)', background: '#0f0f1a', border: '3px solid var(--pixel-border)', padding: '6px 12px', fontFamily: "'Press Start 2P', monospace" }}>
-                <span className="mr-4">LVL <strong style={{ color: 'var(--pixel-yellow)' }}>{stats.level}</strong></span>
-                <span className="mr-4">WORDS <strong style={{ color: 'var(--pixel-green)' }}>{stats.savedWords}</strong></span>
-                <span>SPACES <strong style={{ color: 'var(--pixel-blue)' }}>{stats.unlockedSpaces}/4</strong></span>
+                {activeRoomInfo ? (
+                  <>
+                    <span className="mr-4">ROOM <strong style={{ color: 'var(--pixel-yellow)' }}>
+                      {activeRoomInfo.roomId === 'cafe' ? 'CAFÉ' : activeRoomInfo.roomId === 'house' ? 'HOUSE' : 'SUPERMARKET'}
+                    </strong></span>
+                    <span className="mr-4">LVL <strong style={{ color: 'var(--pixel-yellow)' }}>{stats.level}</strong></span>
+                    <span>FOUND <strong style={{ color: 'var(--pixel-green)' }}>{activeRoomInfo.found}/{activeRoomInfo.total}</strong></span>
+                  </>
+                ) : (
+                  <span>WORDS <strong style={{ color: 'var(--pixel-green)' }}>{stats.savedWords}</strong></span>
+                )}
               </div>
             </div>
 
@@ -136,11 +146,12 @@ export default function App() {
                 onDiscoverHiddenItem={discoverHiddenItem}
                 notebook={notebook}
                 onGradeNotebook={gradeNotebook}
+                onActiveRoomChange={setActiveRoomInfo}
               />
             )}
 
             {activeTab === 'notebook' && (
-              <NotebookTab entries={notebook} onRemove={removeNotebook} onGrade={gradeNotebook} />
+              <NotebookTab entries={notebook} onRemove={removeNotebook} onGrade={gradeNotebook} onReviewComplete={gainXp} />
             )}
 
             {activeTab === 'dictionary' && (

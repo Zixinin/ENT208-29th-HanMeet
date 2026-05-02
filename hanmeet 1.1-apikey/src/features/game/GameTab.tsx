@@ -7,6 +7,8 @@ import { FlashcardQuiz } from './components/FlashcardQuiz';
 import { CAFE_ROOM_ITEMS } from './data/cafeRoomItems';
 import { SUPERMARKET_ROOM_ITEMS } from './data/supermarketRoomItems';
 import { HOUSE_ROOM_ITEMS } from './data/houseRoomItems';
+import { ReviewGrade } from '../notebook/reviewEngine';
+import { ActiveRoomInfo } from './types/tasks';
 
 type Scene = 'select' | RoomId;
 
@@ -23,7 +25,8 @@ interface GameTabProps {
   onAddNotebook: (item: VocabularyItem) => void;
   onDiscoverHiddenItem: (itemId: string) => void;
   notebook: NotebookEntry[];
-  onGradeNotebook: (id: string, grade: number) => void;
+  onGradeNotebook: (id: string, grade: ReviewGrade) => void;
+  onActiveRoomChange: (info: ActiveRoomInfo | null) => void;
 }
 
 const ROOM_ITEMS: Record<RoomId, RoomItem[]> = {
@@ -32,7 +35,7 @@ const ROOM_ITEMS: Record<RoomId, RoomItem[]> = {
   house:       HOUSE_ROOM_ITEMS,
 };
 
-export function GameTab({ onGainXp, onAddNotebook, notebook, onGradeNotebook, avatarPresetId }: GameTabProps) {
+export function GameTab({ onGainXp, onAddNotebook, notebook, onGradeNotebook, avatarPresetId, onActiveRoomChange }: GameTabProps) {
   const [scene, setScene] = useState<Scene>('select');
   const [quizOpen, setQuizOpen] = useState(false);
 
@@ -65,7 +68,12 @@ export function GameTab({ onGainXp, onAddNotebook, notebook, onGradeNotebook, av
   return (
     <div style={{ width: '100%', height: 'calc(100vh - 120px)', position: 'relative' }}>
       {scene === 'select' && (
-        <RoomSelect onEnter={(id) => setScene(id)} />
+        <RoomSelect
+          onEnter={(id) => {
+            setScene(id);
+            onActiveRoomChange({ roomId: id, found: 0, total: ROOM_ITEMS[id].length });
+          }}
+        />
       )}
 
       {(scene === 'cafe' || scene === 'supermarket' || scene === 'house') && (
@@ -73,7 +81,10 @@ export function GameTab({ onGainXp, onAddNotebook, notebook, onGradeNotebook, av
           roomId={scene}
           items={ROOM_ITEMS[scene]}
           avatarPresetId={avatarPresetId}
-          onBack={() => setScene('select')}
+          onBack={() => {
+            setScene('select');
+            onActiveRoomChange(null);
+          }}
           onSave={handleSave}
         />
       )}
