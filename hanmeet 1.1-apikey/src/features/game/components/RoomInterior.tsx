@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { RoomItem, InteriorItem, SpaceId } from '../../../types/domain';
 import { useRoomEngine, ROOM_W, ROOM_H } from '../hooks/useRoomEngine';
 import { VocabPopup } from './VocabPopup';
 import type { RoomId } from './RoomSelect';
 import { RetroAudioSystem } from '../systems/audioSystem';
 import { speakMandarin } from '../systems/speechSystem';
-import type { DifficultyLevel } from '../types/tasks';
+import type { Task, TaskProgress, DifficultyLevel } from '../types/tasks';
+import { generateFindTask } from '../systems/roomTaskSystem';
+import { TaskCard } from './TaskCard';
 
 const BG: Record<RoomId, string> = {
   cafe:        '/rooms/cafe-interior.jpeg',
@@ -90,10 +92,19 @@ interface Props {
   onSave: (item: InteriorItem) => void;
 }
 
-export function RoomInterior({ roomId, items, difficultyLevel: _difficultyLevel, avatarPresetId, onBack, onSave }: Props) {
+export function RoomInterior({ roomId, items, difficultyLevel, avatarPresetId, onBack, onSave }: Props) {
   const { canvasRef, containerRef, scale, nearItem } = useRoomEngine({ items, avatarPresetId });
   const [activeItem, setActiveItem] = useState<RoomItem | null>(null);
   const [audio] = useState(() => new RetroAudioSystem());
+
+  const [currentTask, setCurrentTask] = useState<Task | null>(() =>
+    generateFindTask(items, [])
+  );
+  const [foundChinese, setFoundChinese] = useState<string[]>([]);
+  const [taskProgress, setTaskProgress] = useState<TaskProgress>({ current: 0, target: 1, isComplete: false });
+
+  // Track which item was open just before the popup closed, for LV.1 task completion
+  const lastInspectedRef = useRef<RoomItem | null>(null);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -101,12 +112,40 @@ export function RoomInterior({ roomId, items, difficultyLevel: _difficultyLevel,
       if (key === 'escape') { setActiveItem(null); return; }
       if (key === 'e' && nearItem && !activeItem) {
         audio.playUiClick();
+        lastInspectedRef.current = nearItem;
         setActiveItem(nearItem);
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [nearItem, activeItem, audio]);
+
+  // LV.1: when the popup closes, award XP and advance to next task
+  useEffect(() => {
+    if (activeItem !== null) return; // popup just opened or still open
+    const inspected = lastInspectedRef.current;
+    if (!inspected || difficultyLevel !== 1) return;
+
+    // Mark the item as found and complete the current task
+    const interiorItem = toInteriorItem(inspected, roomId);
+    audio.playPickup();
+    onSave(interiorItem); // awards XP + adds to notebook
+    // LV.2 quiz wired in Task 10
+    const inspectedChinese = inspected.chinese;
+    setFoundChinese(prev => [...prev, inspectedChinese]);
+    setTaskProgress({ current: 1, target: 1, isComplete: true });
+    lastInspectedRef.current = null; // clear so this doesn't re-fire
+
+    setTimeout(() => {
+      setFoundChinese(prev => {
+        const next = generateFindTask(items, prev);
+        setCurrentTask(next);
+        return prev;
+      });
+      setTaskProgress({ current: 0, target: 1, isComplete: false });
+    }, 500);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeItem]);
 
   const speak = (text: string) => {
     audio.playUiClick();
@@ -195,11 +234,23 @@ export function RoomInterior({ roomId, items, difficultyLevel: _difficultyLevel,
           item={toInteriorItem(activeItem, roomId)}
           onClose={() => setActiveItem(null)}
           onSave={(interiorItem) => {
-            audio.playPickup();
-            onSave(interiorItem);
+            if (difficultyLevel !== 1) {
+              // LV.1 XP is awarded on close (via useEffect); LV.2+ save is explicit
+              audio.playPickup();
+              onSave(interiorItem);
+            }
             setActiveItem(null);
           }}
           onSpeak={speak}
+        />
+      )}
+
+      {/* Task card — screen space, bottom-right */}
+      {currentTask && (
+        <TaskCard
+          task={currentTask}
+          progress={taskProgress}
+          difficultyLevel={difficultyLevel}
         />
       )}
     </div>
