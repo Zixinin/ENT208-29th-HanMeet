@@ -41,6 +41,12 @@ const LEVELS: LevelConfig[] = [
 ];
 
 export function DifficultyModal({ roomLabel, roomEmoji, onSelect, onCancel }: DifficultyModalProps) {
+  React.useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onCancel(); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [onCancel]);
+
   return (
     <div
       style={{
@@ -56,6 +62,9 @@ export function DifficultyModal({ roomLabel, roomEmoji, onSelect, onCancel }: Di
       onClick={onCancel}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={`${roomLabel} — select difficulty level`}
         style={{
           background: '#1a1a2e',
           border: '3px solid #4a4a6e',
