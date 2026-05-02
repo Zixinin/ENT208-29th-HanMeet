@@ -103,8 +103,17 @@ export function RoomInterior({ roomId, items, difficultyLevel, avatarPresetId, o
   const [foundChinese, setFoundChinese] = useState<string[]>([]);
   const [taskProgress, setTaskProgress] = useState<TaskProgress>({ current: 0, target: 1, isComplete: false });
 
-  // Track which item was open just before the popup closed, for LV.1 task completion
+  // Track which item was open just before the popup closed, for LV.1 task completion.
+  // IMPORTANT: if a click/touch path to open the popup is added later, it must also set lastInspectedRef.current.
   const lastInspectedRef = useRef<RoomItem | null>(null);
+
+  // Refs so the popup-close effect always sees current prop values without re-registering on every render.
+  const difficultyLevelRef = useRef(difficultyLevel);
+  difficultyLevelRef.current = difficultyLevel;
+  const onSaveRef = useRef(onSave);
+  onSaveRef.current = onSave;
+  const roomIdRef = useRef(roomId);
+  roomIdRef.current = roomId;
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -124,24 +133,21 @@ export function RoomInterior({ roomId, items, difficultyLevel, avatarPresetId, o
   useEffect(() => {
     if (activeItem !== null) return; // popup just opened or still open
     const inspected = lastInspectedRef.current;
-    if (!inspected || difficultyLevel !== 1) return;
+    if (!inspected || difficultyLevelRef.current !== 1) return;
 
     // Mark the item as found and complete the current task
-    const interiorItem = toInteriorItem(inspected, roomId);
+    const interiorItem = toInteriorItem(inspected, roomIdRef.current);
     audio.playPickup();
-    onSave(interiorItem); // awards XP + adds to notebook
+    onSaveRef.current(interiorItem); // awards XP + adds to notebook
     // LV.2 quiz wired in Task 10
     const inspectedChinese = inspected.chinese;
-    setFoundChinese(prev => [...prev, inspectedChinese]);
+    const nextFoundChinese = [...foundChinese, inspectedChinese];
+    setFoundChinese(nextFoundChinese);
     setTaskProgress({ current: 1, target: 1, isComplete: true });
     lastInspectedRef.current = null; // clear so this doesn't re-fire
 
     setTimeout(() => {
-      setFoundChinese(prev => {
-        const next = generateFindTask(items, prev);
-        setCurrentTask(next);
-        return prev;
-      });
+      setCurrentTask(generateFindTask(items, nextFoundChinese));
       setTaskProgress({ current: 0, target: 1, isComplete: false });
     }, 500);
   // eslint-disable-next-line react-hooks/exhaustive-deps
