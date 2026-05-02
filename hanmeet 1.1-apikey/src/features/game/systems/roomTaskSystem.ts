@@ -15,8 +15,8 @@ function uniqueByKey<T>(items: T[], key: keyof T): T[] {
   });
 }
 
-function pickRandom<T>(arr: T[]): T {
-  if (arr.length === 0) throw new Error('pickRandom called with empty array');
+function pickRandom<T>(arr: T[], context = 'unknown'): T {
+  if (arr.length === 0) throw new Error(`pickRandom called with empty array: ${context}`);
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
@@ -27,7 +27,7 @@ export function generateFindTask(items: RoomItem[], foundChinese: string[]): Fin
   const foundSet = new Set(foundChinese);
   const unfound = unique.filter(i => !foundSet.has(i.chinese));
   const pool = unfound.length > 0 ? unfound : unique;
-  const target = pickRandom(pool);
+  const target = pickRandom(pool, 'generateFindTask: no items available');
   return {
     kind: 'find-item',
     targetChinese: target.chinese,
@@ -70,10 +70,6 @@ export interface ComboDefinition {
   xpReward: number;
 }
 
-// All targetChinese words verified against actual room item data:
-// Cafe: 咖啡✓ 服务员✓ 收银台✓ 沙发✓ 植物✓ 壁炉✓
-// House: 书架✓ 木椅✓ 桌子✓ 电视✓ 沙发✓ 地毯✓
-// Supermarket: 面包✓ 奶酪✓ 蜂蜜✓ 酱油✓ 醋✓ 糖✓ 盐✓
 export const ROOM_COMBOS: Record<'cafe' | 'house' | 'supermarket', ComboDefinition[]> = {
   cafe: [
     { name: 'Morning Order', targetChinese: ['咖啡', '服务员', '收银台'], xpReward: 40 },
@@ -92,7 +88,7 @@ export const ROOM_COMBOS: Record<'cafe' | 'house' | 'supermarket', ComboDefiniti
 export function generateRecipeCombo(
   roomId: 'cafe' | 'house' | 'supermarket',
 ): RecipeComboTask {
-  const combo = pickRandom(ROOM_COMBOS[roomId]);
+  const combo = pickRandom(ROOM_COMBOS[roomId], `generateRecipeCombo: no combos for room "${roomId}"`);
   return {
     kind: 'recipe-combo',
     comboName: combo.name,

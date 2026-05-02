@@ -20,6 +20,7 @@ assert.equal(lastTask.targetChinese, allChinese[0]);
 const list = generateShoppingList(CAFE_ROOM_ITEMS, 3);
 assert.equal(list.kind, 'shopping-list');
 assert.equal(list.items.length, 3);
+assert.equal(list.xpReward, list.items.length * 15, 'xpReward should be items.length * 15');
 // All items are unique Chinese words
 const listChinese = list.items.map(i => i.chinese);
 assert.equal(new Set(listChinese).size, 3);
