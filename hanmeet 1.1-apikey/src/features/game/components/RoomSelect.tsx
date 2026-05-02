@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { DifficultyModal } from './DifficultyModal';
-import type { DifficultyLevel } from '../types/tasks';
+import type { RoomId, DifficultyLevel } from '../types/tasks';
 
-export type RoomId = 'cafe' | 'supermarket' | 'house';
+export type { RoomId };
 
 interface Room {
   id: RoomId;

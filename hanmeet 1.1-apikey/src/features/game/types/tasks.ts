@@ -1,3 +1,5 @@
+export type RoomId = 'cafe' | 'house' | 'supermarket';
+
 export type DifficultyLevel = 1 | 2 | 3;
 
 export type ChallengeMode = 'shopping-list' | 'timed-sprint' | 'recipe-combo';
@@ -39,8 +41,6 @@ export interface TaskProgress {
   target: number;
   isComplete: boolean;
 }
-
-import type { RoomId } from '../components/RoomSelect';
 
 export interface ActiveRoomInfo {
   roomId: RoomId;
