@@ -168,7 +168,7 @@ export function TaskCard({ task, progress, difficultyLevel }: TaskCardProps) {
             marginBottom: 2,
           }}
         >
-          {progress.current}/{progress.target}
+          {Math.min(progress.current, progress.target)}/{progress.target}
           {progress.isComplete && ' ✓'}
         </div>
         <ProgressDots current={progress.current} target={progress.target} />
