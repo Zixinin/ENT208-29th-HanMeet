@@ -38,7 +38,7 @@ const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>('game');
-  const [activeRoomInfo, setActiveRoomInfo] = React.useState<ActiveRoomInfo | null>(null);
+  const [activeRoomInfo, setActiveRoomInfo] = useState<ActiveRoomInfo | null>(null);
   const {
     profile,
     progress,
@@ -107,7 +107,7 @@ export default function App() {
               {TABS.map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => { if (tab.id !== 'game') setActiveRoomInfo(null); setActiveTab(tab.id); }}
                   style={{
                     fontSize: '8px',
                     padding: '8px 14px',

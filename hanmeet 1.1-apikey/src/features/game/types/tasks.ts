@@ -40,8 +40,10 @@ export interface TaskProgress {
   isComplete: boolean;
 }
 
+import type { RoomId } from '../components/RoomSelect';
+
 export interface ActiveRoomInfo {
-  roomId: 'cafe' | 'house' | 'supermarket';
+  roomId: RoomId;
   found: number;
   total: number;
 }

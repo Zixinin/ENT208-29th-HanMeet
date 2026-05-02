@@ -38,6 +38,7 @@ const ROOM_ITEMS: Record<RoomId, RoomItem[]> = {
 export function GameTab({ onGainXp, onAddNotebook, notebook, onGradeNotebook, avatarPresetId, onActiveRoomChange }: GameTabProps) {
   const [scene, setScene] = useState<Scene>('select');
   const [quizOpen, setQuizOpen] = useState(false);
+  const [foundCount, setFoundCount] = useState(0);
 
   useEffect(() => {
     if (scene !== 'select') return;
@@ -63,6 +64,14 @@ export function GameTab({ onGainXp, onAddNotebook, notebook, onGradeNotebook, av
       xp: item.xp,
       icon: item.icon,
     });
+    if (scene !== 'select') {
+      const roomId = scene as RoomId;
+      setFoundCount(prev => {
+        const next = prev + 1;
+        onActiveRoomChange({ roomId, found: next, total: ROOM_ITEMS[roomId].length });
+        return next;
+      });
+    }
   };
 
   return (
@@ -70,6 +79,7 @@ export function GameTab({ onGainXp, onAddNotebook, notebook, onGradeNotebook, av
       {scene === 'select' && (
         <RoomSelect
           onEnter={(id) => {
+            setFoundCount(0);
             setScene(id);
             onActiveRoomChange({ roomId: id, found: 0, total: ROOM_ITEMS[id].length });
           }}
@@ -82,6 +92,7 @@ export function GameTab({ onGainXp, onAddNotebook, notebook, onGradeNotebook, av
           items={ROOM_ITEMS[scene]}
           avatarPresetId={avatarPresetId}
           onBack={() => {
+            setFoundCount(0);
             setScene('select');
             onActiveRoomChange(null);
           }}
