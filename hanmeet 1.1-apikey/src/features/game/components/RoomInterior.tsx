@@ -17,6 +17,7 @@ import {
 } from '../systems/roomTaskSystem';
 import { TaskCard } from './TaskCard';
 import { QuizPopup } from './QuizPopup';
+import { ChallengeTimer } from './ChallengeTimer';
 
 const BG: Record<RoomId, string> = {
   cafe:        '/rooms/cafe-interior.jpeg',
@@ -120,6 +121,7 @@ export function RoomInterior({ roomId, items, difficultyLevel, avatarPresetId, o
   const [foundChinese, setFoundChinese] = useState<string[]>([]);
   const [inspectedCount, setInspectedCount] = useState(0);
   const [quizItem, setQuizItem] = useState<RoomItem | null>(null);
+  const [timerEnded, setTimerEnded] = useState(false);
 
   // Track which item was open just before the popup closed, for LV.1 task completion.
   // IMPORTANT: if a click/touch path to open the popup is added later, it must also set lastInspectedRef.current.
@@ -281,6 +283,44 @@ export function RoomInterior({ roomId, items, difficultyLevel, avatarPresetId, o
       >
         ← Back
       </button>
+
+      {difficultyLevel === 3 && challengeMode === 'timed-sprint' && !timerEnded && currentTask?.kind === 'timed-sprint' && (
+        <ChallengeTimer
+          durationSeconds={currentTask.durationSeconds}
+          score={foundChinese.length}
+          onTimeUp={() => {
+            setTimerEnded(true);
+            advanceChallengeModeIndex(roomId);
+          }}
+        />
+      )}
+
+      {timerEnded && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 60,
+          background: 'rgba(0,0,0,0.85)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          fontFamily: "'Press Start 2P', monospace",
+        }}>
+          <div style={{ color: '#ffe59a', fontSize: 12, marginBottom: 16 }}>TIME'S UP!</div>
+          <div style={{ color: '#fff', fontSize: 9, marginBottom: 24 }}>
+            You found <strong style={{ color: '#83d68e' }}>{foundChinese.length}</strong> items
+          </div>
+          <button
+            onClick={() => {
+              audio.playUiClick();
+              onBack();
+            }}
+            style={{
+              background: '#83d68e', color: '#000', border: 'none',
+              padding: '8px 16px', fontSize: 8,
+              fontFamily: "'Press Start 2P', monospace", cursor: 'pointer',
+            }}
+          >
+            BACK TO MAP
+          </button>
+        </div>
+      )}
 
       {/* HUD — screen space */}
       <div style={{
