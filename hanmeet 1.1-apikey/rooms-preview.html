@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>HanMeet – Room Placement Preview</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0d0d18; color: #e8e4d8; font-family: 'Courier New', monospace; min-height: 100vh; padding: 20px; }
+
+  h1 { font-size: 13px; letter-spacing: 0.2em; text-transform: uppercase; color: #ffd97d; margin-bottom: 4px; }
+  p.sub { font-size: 10px; color: #666; margin-bottom: 14px; }
+
+  /* Tab switcher */
+  .tabs { display: flex; gap: 4px; margin-bottom: 14px; }
+  .tab { padding: 6px 18px; font-family: inherit; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; border: 1px solid #333; background: #111; color: #666; }
+  .tab.active { background: #1a1a2e; border-color: #ffd97d; color: #ffd97d; }
+
+  /* Scene */
+  .scene-wrapper { position: relative; width: 100%; max-width: 1000px; margin: 0 auto; user-select: none; display: none; }
+  .scene-wrapper.active { display: block; }
+  .bg-img { width: 100%; display: block; image-rendering: pixelated; border: 2px solid #2a2a3e; }
+
+  /* Pins */
+  .pin { position: absolute; transform: translate(-50%,-50%); cursor: grab; z-index: 10; }
+  .pin.dragging { cursor: grabbing; z-index: 999; }
+  .pin .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 0 6px 3px rgba(0,0,0,0.7); transition: transform 0.1s; }
+  .pin:hover .dot, .pin.dragging .dot { transform: scale(1.5); }
+  .pin .label { position: absolute; bottom: calc(100% + 5px); left: 50%; transform: translateX(-50%); background: rgba(8,8,18,0.96); border: 1px solid currentColor; padding: 2px 7px; font-size: 9px; white-space: nowrap; pointer-events: none; border-radius: 2px; opacity: 0; }
+  .pin:hover .label, .pin.dragging .label { opacity: 1; }
+
+  /* Output */
+  .panel { max-width: 1000px; margin: 12px auto 0; background: #08080f; border: 1px solid #1e1e2e; border-radius: 3px; padding: 10px 14px; }
+  .panel h2 { font-size: 9px; color: #ffd97d; margin-bottom: 6px; letter-spacing: 0.1em; text-transform: uppercase; }
+  pre { font-size: 9.5px; line-height: 1.9; color: #7ec8a0; white-space: pre; overflow-x: auto; }
+
+  /* Legend */
+  .legend { max-width: 1000px; margin: 10px auto 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 4px; display: none; }
+  .legend.active { display: grid; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 9px; background: rgba(255,255,255,0.03); padding: 4px 7px; border-radius: 2px; border-left: 3px solid; cursor: pointer; }
+  .legend-item:hover { background: rgba(255,255,255,0.07); }
+  .ldot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .lname { color: #ffd97d; }
+  .lpos { color: #555; font-size: 8px; margin-left: auto; }
+
+  .note { max-width: 1000px; margin: 8px auto 0; font-size: 9px; color: #444; }
+</style>
+</head>
+<body>
+
+<h1>Room Item Placement — Drag to Position</h1>
+<p class="sub">Drag any dot onto the correct spot. Switch rooms with the tabs. Copy the live code output when done.</p>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchRoom('supermarket')">🛒 Supermarket</button>
+  <button class="tab"        onclick="switchRoom('cafe')">☕ Cafe</button>
+</div>
+
+<!-- SUPERMARKET -->
+<div class="scene-wrapper active" id="scene-supermarket">
+  <img class="bg-img" src="public/rooms/supermarket-interior.png" alt="supermarket" />
+</div>
+
+<!-- CAFE -->
+<div class="scene-wrapper" id="scene-cafe">
+  <img class="bg-img" src="public/rooms/cafe-interior.jpeg" alt="cafe" />
+</div>
+
+<div class="panel">
+  <h2 id="output-label">Supermarket — Live Code Output</h2>
+  <pre id="output-code"></pre>
+</div>
+
+<div class="legend active" id="legend-supermarket"></div>
+<div class="legend"        id="legend-cafe"></div>
+
+<div class="note">Tip: click a legend row to flash that pin. Hover a dot to see its name.</div>
+
+<script>
+// ─── Item definitions ─────────────────────────────────────────────────────────
+const ROOMS = {
+  supermarket: {
+    label: 'Supermarket',
+    bg: 'supermarket-interior.png',
+    items: [
+      // Food / packaged goods (orange)
+      { id: 'supermarket-sugar-1',      label: '糖 Sugar 1',         color: '#f4a261', xPct: 15, yPct: 30 },
+      { id: 'supermarket-sugar-2',      label: '糖 Sugar 2',         color: '#f4a261', xPct: 20, yPct: 30 },
+      { id: 'supermarket-salt-1',       label: '盐 Salt 1',          color: '#f4a261', xPct: 25, yPct: 30 },
+      { id: 'supermarket-salt-2',       label: '盐 Salt 2',          color: '#f4a261', xPct: 30, yPct: 30 },
+      { id: 'supermarket-burger',       label: '汉堡 Burger',        color: '#f4a261', xPct: 35, yPct: 30 },
+      { id: 'supermarket-pizza',        label: '披萨 Pizza',         color: '#f4a261', xPct: 40, yPct: 30 },
+      { id: 'supermarket-bread',        label: '面包 Bread',         color: '#f4a261', xPct: 45, yPct: 30 },
+      { id: 'supermarket-meatball',     label: '肉丸 Meatball',      color: '#f4a261', xPct: 50, yPct: 30 },
+      { id: 'supermarket-cheese',       label: '奶酪 Cheese',        color: '#f4a261', xPct: 55, yPct: 30 },
+      { id: 'supermarket-cake',         label: '蛋糕 Cake',          color: '#f4a261', xPct: 60, yPct: 30 },
+      // Condiments / drinks (cyan)
+      { id: 'supermarket-soy-sauce',    label: '酱油 Soy Sauce',     color: '#4cc9f0', xPct: 15, yPct: 50 },
+      { id: 'supermarket-peanuts',      label: '花生 Peanuts',       color: '#4cc9f0', xPct: 20, yPct: 50 },
+      { id: 'supermarket-vinegar',      label: '醋 Vinegar',         color: '#4cc9f0', xPct: 25, yPct: 50 },
+      { id: 'supermarket-lemon-juice',  label: '柠檬汁 Lemon Juice', color: '#4cc9f0', xPct: 30, yPct: 50 },
+      { id: 'supermarket-onion',        label: '洋葱 Onion',         color: '#4cc9f0', xPct: 35, yPct: 50 },
+      { id: 'supermarket-water',        label: '水 Water',           color: '#4cc9f0', xPct: 40, yPct: 50 },
+      { id: 'supermarket-paprika',      label: '辣椒粉 Paprika',     color: '#4cc9f0', xPct: 45, yPct: 50 },
+      { id: 'supermarket-honey',        label: '蜂蜜 Honey',         color: '#4cc9f0', xPct: 50, yPct: 50 },
+      { id: 'supermarket-oyster-sauce', label: '蚝油 Oyster Sauce',  color: '#4cc9f0', xPct: 55, yPct: 50 },
+      { id: 'supermarket-garlic',       label: '大蒜 Garlic',        color: '#4cc9f0', xPct: 60, yPct: 50 },
+      { id: 'supermarket-pickle',       label: '泡菜 Pickle',        color: '#4cc9f0', xPct: 65, yPct: 50 },
+      { id: 'supermarket-tea',          label: '茶 Tea',             color: '#4cc9f0', xPct: 70, yPct: 50 },
+      { id: 'supermarket-candle',       label: '蜡烛 Candle',        color: '#4cc9f0', xPct: 75, yPct: 50 },
+      // Equipment / decor (yellow)
+      { id: 'supermarket-fridge',       label: '冰箱 Fridge',        color: '#ffd60a', xPct: 15, yPct: 70 },
+      { id: 'supermarket-aquarium',     label: '鱼缸 Aquarium',      color: '#ffd60a', xPct: 25, yPct: 70 },
+      { id: 'supermarket-globe',        label: '地球仪 Globe',       color: '#ffd60a', xPct: 35, yPct: 70 },
+      { id: 'supermarket-plants',       label: '植物 Plants',        color: '#52b788', xPct: 45, yPct: 70 },
+      { id: 'supermarket-trashcan',     label: '垃圾桶 Trashcan',    color: '#52b788', xPct: 55, yPct: 70 },
+      // Staff / counter (red)
+      { id: 'supermarket-cashier-counter', label: '收银台 Cashier Counter', color: '#ef233c', xPct: 65, yPct: 70 },
+      { id: 'supermarket-cashier-person',  label: '收银员 Cashier Person',  color: '#ef233c', xPct: 75, yPct: 70 },
+    ]
+  },
+  cafe: {
+    label: 'Cafe',
+    bg: 'cafe-interior.jpeg',
+    items: [
+      // Seating (purple)
+      { id: 'cafe-sofa-1',          label: '沙发 Sofa 1',           color: '#c77dff', xPct: 15, yPct: 30 },
+      { id: 'cafe-sofa-2',          label: '沙发 Sofa 2',           color: '#c77dff', xPct: 25, yPct: 30 },
+      { id: 'cafe-sofa-3',          label: '沙发 Sofa 3',           color: '#c77dff', xPct: 35, yPct: 30 },
+      { id: 'cafe-chair-1',         label: '椅子 Chair 1',          color: '#ff6b9d', xPct: 45, yPct: 30 },
+      { id: 'cafe-chair-2',         label: '椅子 Chair 2',          color: '#ff6b9d', xPct: 55, yPct: 30 },
+      { id: 'cafe-chair-3',         label: '椅子 Chair 3',          color: '#ff6b9d', xPct: 65, yPct: 30 },
+      { id: 'cafe-chair-4',         label: '椅子 Chair 4',          color: '#ff6b9d', xPct: 75, yPct: 30 },
+      { id: 'cafe-chair-5',         label: '椅子 Chair 5',          color: '#ff6b9d', xPct: 85, yPct: 30 },
+      // Tables (teal)
+      { id: 'cafe-table-big-1',     label: '大桌子 Big Table 1',    color: '#4cc9f0', xPct: 15, yPct: 55 },
+      { id: 'cafe-table-big-2',     label: '大桌子 Big Table 2',    color: '#4cc9f0', xPct: 30, yPct: 55 },
+      { id: 'cafe-table-small-1',   label: '小桌子 Small Table 1',  color: '#80ffdb', xPct: 45, yPct: 55 },
+      { id: 'cafe-table-small-2',   label: '小桌子 Small Table 2',  color: '#80ffdb', xPct: 58, yPct: 55 },
+      { id: 'cafe-table-small-3',   label: '小桌子 Small Table 3',  color: '#80ffdb', xPct: 71, yPct: 55 },
+      // Food / drinks (orange)
+      { id: 'cafe-coffee',          label: '咖啡 Coffee',           color: '#f4a261', xPct: 15, yPct: 75 },
+      { id: 'cafe-tea',             label: '茶 Tea',                color: '#f4a261', xPct: 28, yPct: 75 },
+      // Equipment / decor (yellow)
+      { id: 'cafe-coffee-machine',  label: '咖啡机 Coffee Machine', color: '#ffd60a', xPct: 41, yPct: 75 },
+      { id: 'cafe-fireplace',       label: '壁炉 Fireplace',        color: '#ffd60a', xPct: 54, yPct: 75 },
+      { id: 'cafe-plants',          label: '植物 Plants',           color: '#52b788', xPct: 67, yPct: 75 },
+      // Staff / counter (red)
+      { id: 'cafe-cashier',         label: '收银台 Cashier',        color: '#ef233c', xPct: 80, yPct: 75 },
+      { id: 'cafe-waiter',          label: '服务员 Waiter',         color: '#ef233c', xPct: 15, yPct: 90 },
+      { id: 'cafe-waiter-station',  label: '服务台 Waiter Station', color: '#ef233c', xPct: 30, yPct: 90 },
+    ]
+  }
+};
+
+// ─── State ────────────────────────────────────────────────────────────────────
+const positions = {};
+Object.values(ROOMS).forEach(room => {
+  room.items.forEach(item => { positions[item.id] = { xPct: item.xPct, yPct: item.yPct }; });
+});
+
+let currentRoom = 'supermarket';
+const pins = {};
+
+// ─── Build pins for both rooms ────────────────────────────────────────────────
+Object.entries(ROOMS).forEach(([roomKey, room]) => {
+  const scene = document.getElementById('scene-' + roomKey);
+  room.items.forEach(item => {
+    const pin = document.createElement('div');
+    pin.className = 'pin';
+    pin.style.left = item.xPct + '%';
+    pin.style.top  = item.yPct + '%';
+    pin.style.color = item.color;
+
+    const dot = document.createElement('div');
+    dot.className = 'dot';
+    dot.style.background = item.color;
+
+    const lbl = document.createElement('div');
+    lbl.className = 'label';
+    lbl.style.borderColor = item.color;
+    lbl.style.color = item.color;
+    lbl.textContent = `${item.label}  [x${item.xPct} y${item.yPct}]`;
+
+    pin.append(dot, lbl);
+    scene.appendChild(pin);
+    pins[item.id] = pin;
+
+    // Drag
+    let dragging = false, startX, startY, startXP, startYP;
+    pin.addEventListener('mousedown', e => {
+      if (e.button !== 0) return;
+      e.preventDefault();
+      dragging = true;
+      pin.classList.add('dragging');
+      const rect = scene.getBoundingClientRect();
+      startX = e.clientX; startY = e.clientY;
+      startXP = positions[item.id].xPct; startYP = positions[item.id].yPct;
+
+      const onMove = ev => {
+        if (!dragging) return;
+        const dx = ev.clientX - startX;
+        const dy = ev.clientY - startY;
+        let nx = startXP + (dx / rect.width)  * 100;
+        let ny = startYP + (dy / rect.height) * 100;
+        nx = Math.round(Math.max(0, Math.min(100, nx)) * 10) / 10;
+        ny = Math.round(Math.max(0, Math.min(100, ny)) * 10) / 10;
+        positions[item.id] = { xPct: nx, yPct: ny };
+        pin.style.left = nx + '%';
+        pin.style.top  = ny + '%';
+        lbl.textContent = `${item.label}  [x${nx} y${ny}]`;
+        const lp = document.getElementById('lpos-' + item.id);
+        if (lp) lp.textContent = `x${nx} y${ny}`;
+        renderOutput();
+      };
+      const onUp = () => {
+        dragging = false;
+        pin.classList.remove('dragging');
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+      };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+
+    // Legend
+    const legend = document.getElementById('legend-' + roomKey);
+    const li = document.createElement('div');
+    li.className = 'legend-item';
+    li.style.borderColor = item.color;
+
+    const d = document.createElement('div'); d.className = 'ldot'; d.style.background = item.color;
+    const nm = document.createElement('span'); nm.className = 'lname'; nm.textContent = item.id.replace('supermarket-','').replace('cafe-','');
+    const pos = document.createElement('span'); pos.className = 'lpos'; pos.id = 'lpos-' + item.id;
+    pos.textContent = `x${item.xPct} y${item.yPct}`;
+    li.append(d, nm, pos);
+    li.addEventListener('click', () => {
+      pin.querySelector('.dot').animate(
+        [{ transform:'scale(1)' },{ transform:'scale(2.5)' },{ transform:'scale(1)' }],
+        { duration: 500, iterations: 2 }
+      );
+      scene.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+    legend.appendChild(li);
+  });
+});
+
+// ─── Room switcher ────────────────────────────────────────────────────────────
+function switchRoom(roomKey) {
+  currentRoom = roomKey;
+  document.querySelectorAll('.scene-wrapper').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.legend').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('scene-' + roomKey).classList.add('active');
+  document.getElementById('legend-' + roomKey).classList.add('active');
+  document.querySelectorAll('.tab')[roomKey === 'supermarket' ? 0 : 1].classList.add('active');
+  document.getElementById('output-label').textContent = ROOMS[roomKey].label + ' — Live Code Output';
+  renderOutput();
+}
+
+// ─── Code output ──────────────────────────────────────────────────────────────
+function renderOutput() {
+  const room = ROOMS[currentRoom];
+  const lines = room.items.map(item => {
+    const p = positions[item.id];
+    return `  { id: '${item.id}', xPct: ${p.xPct}, yPct: ${p.yPct} },  // ${item.label}`;
+  });
+  document.getElementById('output-code').textContent = lines.join('\n');
+}
+
+renderOutput();
+</script>
+</body>
+</html>

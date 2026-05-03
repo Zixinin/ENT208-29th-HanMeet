@@ -78,14 +78,18 @@ function NearItemHighlight({ nearItem }: { nearItem: RoomItem | null }) {
         bottom: '100%',
         left: '50%',
         transform: 'translateX(-50%)',
-        marginBottom: 14,
+        marginBottom: 18,
         fontFamily: "'Press Start 2P', monospace",
-        fontSize: 7,
+        fontSize: 12,
+        lineHeight: 1.4,
         color: '#ffffff',
-        background: 'rgba(0,0,0,0.75)',
-        padding: '3px 6px',
+        textShadow: '2px 2px 0 #000',
+        background: 'rgba(0,0,0,0.92)',
+        border: '2px solid #ffe59a',
+        padding: '6px 10px',
         whiteSpace: 'nowrap',
         borderRadius: 2,
+        boxShadow: '3px 3px 0 #000',
       }}>
         {nearItem.chinese}
       </div>
@@ -294,10 +298,12 @@ export function RoomInterior({ roomId, items, difficultyLevel, avatarPresetId, o
           onBack();
         }}
         style={{
-          position: 'absolute', top: 12, left: 12, zIndex: 20,
-          fontFamily: "'Press Start 2P', monospace", fontSize: 8,
-          background: 'rgba(0,0,0,0.75)', border: '2px solid #4a4a6e',
-          color: '#aaaacc', padding: '6px 10px', cursor: 'pointer',
+          position: 'absolute', top: 16, left: 16, zIndex: 20,
+          fontFamily: "'Press Start 2P', monospace", fontSize: 12,
+          background: '#080814', border: '4px solid #ffe59a',
+          color: '#ffffff', padding: '12px 18px', cursor: 'pointer',
+          boxShadow: '5px 5px 0 #000',
+          textShadow: '2px 2px 0 #000',
         }}
       >
         ← Back

@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>HanMeet – House Item Placement Preview</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0d0d18;
+    color: #e8e4d8;
+    font-family: 'Courier New', monospace;
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  h1 { font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase; color: #ffd97d; margin-bottom: 4px; }
+  p.subtitle { font-size: 10px; color: #888; margin-bottom: 14px; line-height: 1.6; }
+
+  .scene-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 960px;
+    margin: 0 auto;
+    user-select: none;
+  }
+
+  .bg-img {
+    width: 100%;
+    display: block;
+    image-rendering: pixelated;
+    border: 2px solid #333;
+    pointer-events: none;
+  }
+
+  .pin {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    cursor: grab;
+    z-index: 10;
+  }
+  .pin.dragging { cursor: grabbing; z-index: 999; }
+
+  .pin .dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.85);
+    box-shadow: 0 0 8px 3px rgba(0,0,0,0.7);
+    transition: transform 0.1s;
+  }
+  .pin:hover .dot,
+  .pin.dragging .dot { transform: scale(1.4); }
+
+  .pin .label {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(10,10,22,0.95);
+    border: 1px solid currentColor;
+    padding: 3px 7px;
+    font-size: 9px;
+    white-space: nowrap;
+    pointer-events: none;
+    border-radius: 2px;
+    line-height: 1.6;
+  }
+  /* Always show label while dragging; hover shows on idle */
+  .pin .label { opacity: 0; }
+  .pin:hover .label,
+  .pin.dragging .label { opacity: 1; }
+
+  /* Zone overlays */
+  .zone {
+    position: absolute;
+    pointer-events: none;
+    border: 1px dashed rgba(255,255,255,0.13);
+  }
+  .zone-label {
+    position: absolute;
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: rgba(255,255,255,0.28);
+    padding: 2px 4px;
+    pointer-events: none;
+  }
+
+  /* Output panel */
+  .panel {
+    max-width: 960px;
+    margin: 14px auto 0;
+    background: #0a0a15;
+    border: 1px solid #222;
+    border-radius: 4px;
+    padding: 12px 16px;
+  }
+  .panel h2 { font-size: 10px; color: #ffd97d; margin-bottom: 8px; letter-spacing: 0.12em; text-transform: uppercase; }
+
+  #output-code {
+    font-size: 10px;
+    line-height: 1.8;
+    color: #a8d8a8;
+    white-space: pre;
+    overflow-x: auto;
+  }
+
+  /* Legend grid */
+  .legend {
+    max-width: 960px;
+    margin: 12px auto 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 5px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 9px;
+    background: rgba(255,255,255,0.03);
+    padding: 4px 8px;
+    border-radius: 3px;
+    border-left: 3px solid;
+    cursor: pointer;
+  }
+  .legend-item:hover { background: rgba(255,255,255,0.07); }
+  .legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .legend-name { color: #ffd97d; }
+  .legend-pos { color: #888; margin-left: auto; font-size: 8px; }
+
+  .note { max-width: 960px; margin: 10px auto 0; font-size: 9px; color: #555; line-height: 1.7; }
+</style>
+</head>
+<body>
+
+<h1>House Item Placement — Drag to Adjust</h1>
+<p class="subtitle">
+  🟡 Drag any dot to reposition it. The code output below updates live.<br>
+  Click a row in the legend to highlight that pin. Hover a dot to see its name.
+</p>
+
+<div class="scene-wrapper" id="scene">
+  <img class="bg-img" id="bg" src="public/rooms/house-interior.jpeg" alt="house interior" />
+
+  <!-- Zone overlays -->
+  <div class="zone" style="left:0%;top:0%;width:27%;height:43%;"></div>
+  <div class="zone-label" style="left:1%;top:1%;">Balcony</div>
+
+  <div class="zone" style="left:27%;top:0%;width:30%;height:43%;"></div>
+  <div class="zone-label" style="left:28%;top:1%;">Bedroom</div>
+
+  <div class="zone" style="left:57%;top:0%;width:43%;height:43%;"></div>
+  <div class="zone-label" style="left:58%;top:1%;">Study / Library</div>
+
+  <div class="zone" style="left:0%;top:43%;width:27%;height:57%;"></div>
+  <div class="zone-label" style="left:1%;top:44%;">Kitchen / Dining</div>
+
+  <div class="zone" style="left:27%;top:43%;width:30%;height:57%;"></div>
+  <div class="zone-label" style="left:28%;top:44%;">Living Room</div>
+
+  <div class="zone" style="left:57%;top:43%;width:43%;height:57%;"></div>
+  <div class="zone-label" style="left:58%;top:44%;">Secondary Area</div>
+</div>
+
+<div class="panel">
+  <h2>Live Code Output — copy this into houseRoomItems.ts when done</h2>
+  <pre id="output-code"></pre>
+</div>
+
+<div class="legend" id="legend"></div>
+
+<div class="note">Tip: hold the dot and drag it onto the correct spot on the image. The coordinates update instantly above.</div>
+
+<script>
+// ─── Item data ────────────────────────────────────────────────────────────────
+const ITEMS = [
+  // Kitchen / Dining
+  { id: 'house-dining-table-chair', label: '餐桌 Dining Table+Chairs', xPct: 14, yPct: 74, color: '#f4a261' },
+  { id: 'house-kitchen',            label: '厨房 Kitchen',              xPct: 11, yPct: 57, color: '#f4a261' },
+  { id: 'house-fridge',             label: '冰箱 Fridge',               xPct: 24, yPct: 51, color: '#f4a261' },
+
+  // Balcony / outdoor
+  { id: 'house-balcony',            label: '阳台 Balcony',              xPct: 14, yPct: 18, color: '#52b788' },
+  { id: 'house-garden',             label: '花园 Garden',               xPct:  5, yPct: 22, color: '#52b788' },
+  { id: 'house-chair-outdoor',      label: '椅子 Outdoor Chair',        xPct:  9, yPct: 36, color: '#52b788' },
+  { id: 'house-plants-1',           label: '植物 Plants 1',             xPct: 21, yPct: 27, color: '#52b788' },
+
+  // Living Room
+  { id: 'house-tv',                 label: '电视 TV',                   xPct: 38, yPct: 57, color: '#4cc9f0' },
+  { id: 'house-sofa-1',             label: '沙发 Sofa 1',               xPct: 44, yPct: 70, color: '#4cc9f0' },
+  { id: 'house-rug-1',              label: '地毯 Rug 1',                xPct: 43, yPct: 65, color: '#4cc9f0' },
+  { id: 'house-lamp',               label: '灯 Lamp',                   xPct: 33, yPct: 62, color: '#4cc9f0' },
+  { id: 'house-aquarium',           label: '鱼缸 Aquarium',             xPct: 43, yPct: 87, color: '#4cc9f0' },
+  { id: 'house-window',             label: '窗户 Window',               xPct: 53, yPct: 55, color: '#4cc9f0' },
+  { id: 'house-plants-2',           label: '植物 Plants 2',             xPct: 48, yPct: 57, color: '#4cc9f0' },
+
+  // Secondary Area
+  { id: 'house-sofa-3',             label: '沙发 Sofa 3',               xPct: 76, yPct: 63, color: '#c77dff' },
+  { id: 'house-sofa-4',             label: '沙发 Sofa 4',               xPct: 73, yPct: 70, color: '#c77dff' },
+  { id: 'house-rug-2',              label: '地毯 Rug 2 (green)',         xPct: 82, yPct: 78, color: '#c77dff' },
+  { id: 'house-bookshelf-1',        label: '书架 Bookshelf 1',           xPct: 68, yPct: 72, color: '#c77dff' },
+
+  // Bedroom
+  { id: 'house-bed',                label: '床 Bed',                    xPct: 42, yPct: 17, color: '#ff6b9d' },
+  { id: 'house-sofa-2',             label: '沙发 Sofa 2 (bedroom)',      xPct: 44, yPct: 31, color: '#ff6b9d' },
+  { id: 'house-cabinet',            label: '柜子 Cabinet',              xPct: 35, yPct: 27, color: '#ff6b9d' },
+  { id: 'house-table',              label: '桌子 Table',                xPct: 50, yPct: 28, color: '#ff6b9d' },
+  { id: 'house-sofa-5',             label: '沙发 Sofa 5',               xPct: 48, yPct: 35, color: '#ff6b9d' },
+  { id: 'house-rug-3',              label: '地毯 Rug 3 (bedroom)',       xPct: 43, yPct: 37, color: '#ff6b9d' },
+  { id: 'house-wooden-chair-1',     label: '木椅 Wooden Chair 1',        xPct: 38, yPct: 33, color: '#ff6b9d' },
+  { id: 'house-wooden-chair-2',     label: '木椅 Wooden Chair 2',        xPct: 45, yPct: 40, color: '#ff6b9d' },
+
+  // Study / Library
+  { id: 'house-fireplace',          label: '壁炉 Fireplace',            xPct: 93, yPct: 18, color: '#ffd60a' },
+  { id: 'house-bookshelf-2',        label: '书架 Bookshelf 2',           xPct: 67, yPct: 23, color: '#ffd60a' },
+  { id: 'house-sofa-2b',            label: '沙发 Armchair (study)',      xPct: 84, yPct: 32, color: '#ffd60a' },
+  { id: 'house-tea-table',          label: '茶几 Tea Table',             xPct: 81, yPct: 25, color: '#ffd60a' },
+  { id: 'house-telephone',          label: '电话 Telephone',            xPct: 87, yPct: 28, color: '#ffd60a' },
+];
+
+// ─── State ────────────────────────────────────────────────────────────────────
+const positions = {};
+ITEMS.forEach(item => { positions[item.id] = { xPct: item.xPct, yPct: item.yPct }; });
+
+const scene   = document.getElementById('scene');
+const output  = document.getElementById('output-code');
+const legend  = document.getElementById('legend');
+const pins    = {};
+
+// ─── Render code output ───────────────────────────────────────────────────────
+function renderOutput() {
+  const lines = ITEMS.map(item => {
+    const p = positions[item.id];
+    const xStr = String(p.xPct).padStart(2);
+    const yStr = String(p.yPct).padStart(2);
+    return `  { id: '${item.id.padEnd(28)}', xPct: ${xStr}, yPct: ${yStr} },  // ${item.label}`;
+  });
+  output.textContent = lines.join('\n');
+}
+
+// ─── Update a pin's position visually + refresh label + output ────────────────
+function movePinTo(id, xPct, yPct) {
+  // Clamp
+  xPct = Math.max(0, Math.min(100, xPct));
+  yPct = Math.max(0, Math.min(100, yPct));
+  xPct = Math.round(xPct * 10) / 10;
+  yPct = Math.round(yPct * 10) / 10;
+
+  positions[id] = { xPct, yPct };
+
+  const pin = pins[id];
+  pin.style.left = xPct + '%';
+  pin.style.top  = yPct + '%';
+
+  const lbl = pin.querySelector('.label');
+  const item = ITEMS.find(i => i.id === id);
+  lbl.textContent = `${item.label}  [x${Math.round(xPct)} y${Math.round(yPct)}]`;
+
+  // Update legend pos
+  const legendPos = document.getElementById('leg-pos-' + id);
+  if (legendPos) legendPos.textContent = `x${Math.round(xPct)} y${Math.round(yPct)}`;
+
+  renderOutput();
+}
+
+// ─── Build pins ───────────────────────────────────────────────────────────────
+ITEMS.forEach(item => {
+  const pin = document.createElement('div');
+  pin.className = 'pin';
+  pin.dataset.id = item.id;
+  pin.style.left  = item.xPct + '%';
+  pin.style.top   = item.yPct + '%';
+  pin.style.color = item.color;
+  pin.title       = item.id;
+
+  const dot = document.createElement('div');
+  dot.className = 'dot';
+  dot.style.background = item.color;
+
+  const lbl = document.createElement('div');
+  lbl.className = 'label';
+  lbl.style.borderColor = item.color;
+  lbl.style.color       = item.color;
+  lbl.textContent = `${item.label}  [x${item.xPct} y${item.yPct}]`;
+
+  pin.append(dot, lbl);
+  scene.appendChild(pin);
+  pins[item.id] = pin;
+
+  // ── Drag logic ──────────────────────────────────────────────────────────────
+  let dragging = false;
+  let startX, startY, startXPct, startYPct;
+
+  pin.addEventListener('mousedown', e => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    dragging = true;
+    pin.classList.add('dragging');
+
+    const rect = scene.getBoundingClientRect();
+    startX    = e.clientX;
+    startY    = e.clientY;
+    startXPct = positions[item.id].xPct;
+    startYPct = positions[item.id].yPct;
+
+    const onMove = ev => {
+      if (!dragging) return;
+      const dx = ev.clientX - startX;
+      const dy = ev.clientY - startY;
+      const newX = startXPct + (dx / rect.width)  * 100;
+      const newY = startYPct + (dy / rect.height) * 100;
+      movePinTo(item.id, newX, newY);
+    };
+
+    const onUp = () => {
+      dragging = false;
+      pin.classList.remove('dragging');
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    };
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+});
+
+// ─── Build legend ─────────────────────────────────────────────────────────────
+ITEMS.forEach(item => {
+  const li = document.createElement('div');
+  li.className  = 'legend-item';
+  li.style.borderColor = item.color;
+  li.title = 'Click to flash this pin';
+
+  const d = document.createElement('div');
+  d.className = 'legend-dot';
+  d.style.background = item.color;
+
+  const nm = document.createElement('span');
+  nm.className = 'legend-name';
+  nm.textContent = item.id.replace('house-', '');
+
+  const pos = document.createElement('span');
+  pos.className = 'legend-pos';
+  pos.id = 'leg-pos-' + item.id;
+  pos.textContent = `x${item.xPct} y${item.yPct}`;
+
+  li.append(d, nm, pos);
+
+  // Click legend row → scroll pin into view & flash it
+  li.addEventListener('click', () => {
+    const pin = pins[item.id];
+    pin.querySelector('.dot').animate(
+      [{ transform: 'scale(1)' }, { transform: 'scale(2.5)' }, { transform: 'scale(1)' }],
+      { duration: 500, iterations: 2 }
+    );
+    pin.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+
+  legend.appendChild(li);
+});
+
+// ─── Initial render ───────────────────────────────────────────────────────────
+renderOutput();
+</script>
+</body>
+</html>

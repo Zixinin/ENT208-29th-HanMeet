@@ -93,8 +93,8 @@ export default function App() {
             color: 'var(--pixel-text)',
           }}
         >
-          <header className="sticky top-0 z-40" style={{ background: 'var(--pixel-panel)', borderBottom: '4px solid var(--pixel-border)' }}>
-            <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+          <header className="z-40" style={{ background: 'var(--pixel-panel)', borderBottom: '4px solid var(--pixel-border)', flexShrink: 0, position: 'relative' }}>
+            <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center gap-4">
               <div>
                 <h1 style={{ fontSize: '14px', color: 'var(--pixel-yellow)', textShadow: '2px 2px 0 #000', fontFamily: "'Press Start 2P', monospace" }}>
                   ★ HanMeet ★
@@ -103,20 +103,38 @@ export default function App() {
                   EXPLORE · LEARN · MASTER
                 </p>
               </div>
-              <div style={{ fontSize: '8px', color: 'var(--pixel-text)', background: '#0f0f1a', border: '3px solid var(--pixel-border)', padding: '6px 12px', fontFamily: "'Press Start 2P', monospace" }}>
+              <div style={{
+                position: 'absolute',
+                right: 16,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                fontSize: '8px',
+                lineHeight: 1.6,
+                color: '#fff7d6',
+                background: '#080814',
+                border: '3px solid var(--pixel-border)',
+                padding: '8px 13px',
+                fontFamily: "'Press Start 2P', monospace",
+                boxShadow: '3px 3px 0 #000',
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                gap: 13,
+              }}>
                 {activeRoomInfo ? (
                   <>
-                    <span className="mr-4">ROOM <strong style={{ color: 'var(--pixel-yellow)' }}>
+                    <span>ROOM <strong style={{ color: 'var(--pixel-yellow)' }}>
                       {activeRoomInfo.roomId === 'cafe' ? 'CAFÉ' : activeRoomInfo.roomId === 'house' ? 'HOUSE' : 'SUPERMARKET'}
                     </strong></span>
-                    <span className="mr-4">LVL <strong style={{ color: 'var(--pixel-yellow)' }}>{stats.level}</strong></span>
+                    <span>LVL <strong style={{ color: 'var(--pixel-yellow)' }}>{stats.level}</strong></span>
                     <span>FOUND <strong style={{ color: 'var(--pixel-green)' }}>{activeRoomInfo.found}/{activeRoomInfo.total}</strong></span>
                   </>
                 ) : (
                   <>
-                    <span className="mr-4">PLAYER <strong style={{ color: 'var(--pixel-yellow)' }}>{profile.username}</strong></span>
-                    <span className="mr-4">LV <strong style={{ color: 'var(--pixel-yellow)' }}>{stats.level}</strong></span>
-                    <span className="mr-4">XP <strong style={{ color: 'var(--pixel-green)' }}>{progress.xp}</strong></span>
+                    <span>PLAYER <strong style={{ color: 'var(--pixel-yellow)' }}>{profile.username}</strong></span>
+                    <span>LV <strong style={{ color: 'var(--pixel-yellow)' }}>{stats.level}</strong></span>
+                    <span>XP <strong style={{ color: 'var(--pixel-green)' }}>{progress.xp}</strong></span>
                     <span>DAY <strong style={{ color: 'var(--pixel-green)' }}>{todayLabel}</strong></span>
                   </>
                 )}
