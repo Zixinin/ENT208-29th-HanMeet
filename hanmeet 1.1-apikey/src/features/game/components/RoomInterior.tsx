@@ -267,6 +267,7 @@ export function RoomInterior({ roomId, items, difficultyLevel, avatarPresetId, o
             position: 'absolute', inset: 0,
             width: '100%', height: '100%',
             objectFit: 'fill',
+            imageRendering: 'auto',
             userSelect: 'none', pointerEvents: 'none',
           }}
         />

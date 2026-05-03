@@ -24,7 +24,7 @@ export function ChallengeTimer({ durationSeconds, score, onTimeUp }: Props) {
 
   return (
     <div style={{
-      position: 'absolute', top: 10, right: 10, zIndex: 20,
+      position: 'absolute', top: 196, right: 16, zIndex: 20,
       background: 'rgba(0,0,0,0.88)', border: `2px solid ${color}`,
       padding: '8px 12px', minWidth: 140,
       fontFamily: "'Press Start 2P', monospace",
