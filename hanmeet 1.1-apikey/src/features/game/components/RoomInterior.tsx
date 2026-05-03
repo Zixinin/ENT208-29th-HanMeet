@@ -122,6 +122,9 @@ export function RoomInterior({ roomId, items, difficultyLevel, avatarPresetId, o
   const [inspectedCount, setInspectedCount] = useState(0);
   const [quizItem, setQuizItem] = useState<RoomItem | null>(null);
   const [timerEnded, setTimerEnded] = useState(false);
+  const [comboQuizItems, setComboQuizItems] = useState<RoomItem[]>([]);
+  const [comboQuizIndex, setComboQuizIndex] = useState(0);
+  const [showComboQuiz, setShowComboQuiz] = useState(false);
 
   // Track which item was open just before the popup closed, for LV.1 task completion.
   // IMPORTANT: if a click/touch path to open the popup is added later, it must also set lastInspectedRef.current.
@@ -195,6 +198,21 @@ export function RoomInterior({ roomId, items, difficultyLevel, avatarPresetId, o
           if (newCount >= currentTask.items.length) {
             advanceChallengeModeIndex(roomIdRef.current);
           }
+        }
+      } else if (challengeMode === 'recipe-combo' && currentTask && currentTask.kind === 'recipe-combo') {
+        const nextFoundChinese = foundChinese.includes(inspectedChinese)
+          ? foundChinese
+          : [...foundChinese, inspectedChinese];
+        const allCollected = currentTask.targetChinese.every(c => nextFoundChinese.includes(c));
+
+        if (allCollected) {
+          const quizItems = currentTask.targetChinese
+            .map(c => items.find(i => i.chinese === c))
+            .filter((i): i is RoomItem => i !== undefined);
+
+          setComboQuizItems(quizItems);
+          setComboQuizIndex(0);
+          setShowComboQuiz(true);
         }
       }
       lastInspectedRef.current = null;
@@ -380,6 +398,23 @@ export function RoomInterior({ roomId, items, difficultyLevel, avatarPresetId, o
               : [...foundChinese, quizItem.chinese];
             setCurrentTask(generateFindTask(items, nextFound));
             setQuizItem(null);
+          }}
+        />
+      )}
+
+      {showComboQuiz && comboQuizItems[comboQuizIndex] && (
+        <QuizPopup
+          item={comboQuizItems[comboQuizIndex]}
+          allItems={items}
+          format="mc"
+          onComplete={() => {
+            const next = comboQuizIndex + 1;
+            if (next >= comboQuizItems.length) {
+              setShowComboQuiz(false);
+              advanceChallengeModeIndex(roomId);
+            } else {
+              setComboQuizIndex(next);
+            }
           }}
         />
       )}
