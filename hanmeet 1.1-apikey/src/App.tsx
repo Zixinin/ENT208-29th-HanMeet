@@ -64,6 +64,13 @@ export default function App() {
     [notebook.length, progress.level, progress.unlockedSpaces.length],
   );
 
+  const todayLabel = useMemo(() => {
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'short',
+      day: '2-digit',
+    }).format(new Date()).toUpperCase();
+  }, []);
+
   const addFromItem = (item: VocabularyItem) => {
     addNotebook({
       chinese: item.chinese,
@@ -106,7 +113,12 @@ export default function App() {
                     <span>FOUND <strong style={{ color: 'var(--pixel-green)' }}>{activeRoomInfo.found}/{activeRoomInfo.total}</strong></span>
                   </>
                 ) : (
-                  <span>WORDS <strong style={{ color: 'var(--pixel-green)' }}>{stats.savedWords}</strong></span>
+                  <>
+                    <span className="mr-4">PLAYER <strong style={{ color: 'var(--pixel-yellow)' }}>{profile.username}</strong></span>
+                    <span className="mr-4">LV <strong style={{ color: 'var(--pixel-yellow)' }}>{stats.level}</strong></span>
+                    <span className="mr-4">XP <strong style={{ color: 'var(--pixel-green)' }}>{progress.xp}</strong></span>
+                    <span>DAY <strong style={{ color: 'var(--pixel-green)' }}>{todayLabel}</strong></span>
+                  </>
                 )}
               </div>
             </div>
