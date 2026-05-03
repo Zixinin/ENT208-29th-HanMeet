@@ -279,7 +279,10 @@ export function RoomInterior({ roomId, items, difficultyLevel, avatarPresetId, o
           onComplete={(correct) => {
             if (correct) audio.playPickup();
             onSave(toInteriorItem(quizItem, roomIdRef.current));
-            setCurrentTask(generateFindTask(items, foundChinese));
+            const nextFound = foundChinese.includes(quizItem.chinese)
+              ? foundChinese
+              : [...foundChinese, quizItem.chinese];
+            setCurrentTask(generateFindTask(items, nextFound));
             setTaskProgress({ current: 0, target: 1, isComplete: false });
             setQuizItem(null);
           }}
