@@ -5,8 +5,16 @@ import { VocabPopup } from './VocabPopup';
 import type { RoomId } from './RoomSelect';
 import { RetroAudioSystem } from '../systems/audioSystem';
 import { speakMandarin } from '../systems/speechSystem';
-import type { Task, TaskProgress, DifficultyLevel } from '../types/tasks';
-import { generateFindTask } from '../systems/roomTaskSystem';
+import type { Task, TaskProgress, DifficultyLevel, ChallengeMode } from '../types/tasks';
+import {
+  generateFindTask,
+  generateShoppingList,
+  generateTimedSprint,
+  generateRecipeCombo,
+  getNextChallengeMode,
+  readChallengeModeIndex,
+  advanceChallengeModeIndex,
+} from '../systems/roomTaskSystem';
 import { TaskCard } from './TaskCard';
 import { QuizPopup } from './QuizPopup';
 
@@ -98,11 +106,18 @@ export function RoomInterior({ roomId, items, difficultyLevel, avatarPresetId, o
   const [activeItem, setActiveItem] = useState<RoomItem | null>(null);
   const [audio] = useState(() => new RetroAudioSystem());
 
-  const [currentTask, setCurrentTask] = useState<Task | null>(() =>
-    generateFindTask(items, [])
-  );
+  const [challengeMode] = useState<ChallengeMode>(() => {
+    if (difficultyLevel !== 3) return 'shopping-list';
+    return getNextChallengeMode(readChallengeModeIndex(roomId));
+  });
+
+  const [currentTask, setCurrentTask] = useState<Task | null>(() => {
+    if (difficultyLevel === 1 || difficultyLevel === 2) return generateFindTask(items, []);
+    if (challengeMode === 'shopping-list') return generateShoppingList(items, 4);
+    if (challengeMode === 'timed-sprint') return generateTimedSprint();
+    return generateRecipeCombo(roomId);
+  });
   const [foundChinese, setFoundChinese] = useState<string[]>([]);
-  const [taskProgress, setTaskProgress] = useState<TaskProgress>({ current: 0, target: 1, isComplete: false });
   const [inspectedCount, setInspectedCount] = useState(0);
   const [quizItem, setQuizItem] = useState<RoomItem | null>(null);
 
@@ -146,11 +161,9 @@ export function RoomInterior({ roomId, items, difficultyLevel, avatarPresetId, o
       const inspectedChinese = inspected.chinese;
       const nextFoundChinese = [...foundChinese, inspectedChinese];
       setFoundChinese(nextFoundChinese);
-      setTaskProgress({ current: 1, target: 1, isComplete: true });
       lastInspectedRef.current = null;
       setTimeout(() => {
         setCurrentTask(generateFindTask(items, nextFoundChinese));
-        setTaskProgress({ current: 0, target: 1, isComplete: false });
       }, 500);
     } else if (difficultyLevelRef.current === 2) {
       // LV.2: update found state, then show quiz (XP deferred to quiz completion)
@@ -160,6 +173,28 @@ export function RoomInterior({ roomId, items, difficultyLevel, avatarPresetId, o
       }
       setInspectedCount(c => c + 1);
       setQuizItem(inspected);
+      lastInspectedRef.current = null;
+    } else if (difficultyLevelRef.current === 3) {
+      const inspectedChinese = inspected.chinese;
+      if (!foundChinese.includes(inspectedChinese)) {
+        setFoundChinese(prev => [...prev, inspectedChinese]);
+      }
+      // Award XP for every item inspected in LV.3
+      const interiorItem = toInteriorItem(inspected, roomIdRef.current);
+      audio.playPickup();
+      onSaveRef.current(interiorItem);
+      // Shopping list completion check
+      if (challengeMode === 'shopping-list' && currentTask && currentTask.kind === 'shopping-list') {
+        const listChinese = currentTask.items.map(i => i.chinese);
+        if (listChinese.includes(inspectedChinese)) {
+          const alreadyFound = foundChinese.filter(c => listChinese.includes(c));
+          const alreadyIncludes = alreadyFound.includes(inspectedChinese);
+          const newCount = alreadyIncludes ? alreadyFound.length : alreadyFound.length + 1;
+          if (newCount >= currentTask.items.length) {
+            advanceChallengeModeIndex(roomIdRef.current);
+          }
+        }
+      }
       lastInspectedRef.current = null;
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -171,6 +206,27 @@ export function RoomInterior({ roomId, items, difficultyLevel, avatarPresetId, o
   };
 
   const quizFormat = inspectedCount % 2 === 0 ? 'pinyin' : 'mc';
+
+  const taskProgress: TaskProgress = (() => {
+    if (!currentTask) return { current: 0, target: 1, isComplete: false };
+    if (currentTask.kind === 'find-item') {
+      const done = foundChinese.includes(currentTask.targetChinese);
+      return { current: done ? 1 : 0, target: 1, isComplete: done };
+    }
+    if (currentTask.kind === 'shopping-list') {
+      const listChinese = currentTask.items.map(i => i.chinese);
+      const found = foundChinese.filter(c => listChinese.includes(c)).length;
+      return { current: found, target: currentTask.items.length, isComplete: found >= currentTask.items.length };
+    }
+    if (currentTask.kind === 'timed-sprint') {
+      return { current: foundChinese.length, target: Infinity, isComplete: false };
+    }
+    if (currentTask.kind === 'recipe-combo') {
+      const found = currentTask.targetChinese.filter(c => foundChinese.includes(c)).length;
+      return { current: found, target: currentTask.targetChinese.length, isComplete: found >= currentTask.targetChinese.length };
+    }
+    return { current: 0, target: 1, isComplete: false };
+  })();
 
   return (
     <div
@@ -283,7 +339,6 @@ export function RoomInterior({ roomId, items, difficultyLevel, avatarPresetId, o
               ? foundChinese
               : [...foundChinese, quizItem.chinese];
             setCurrentTask(generateFindTask(items, nextFound));
-            setTaskProgress({ current: 0, target: 1, isComplete: false });
             setQuizItem(null);
           }}
         />
