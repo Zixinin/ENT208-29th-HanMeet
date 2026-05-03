@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { RoomItem } from '../../../types/domain';
 import { normalizePinyin } from '../systems/pinyinUtils';
 
@@ -11,17 +11,9 @@ interface Props {
   onComplete: (correct: boolean) => void;
 }
 
-function pickDistractors(correct: RoomItem, allItems: RoomItem[]): string[] {
-  const others = allItems
-    .filter(i => i.english !== correct.english)
-    .map(i => i.english);
-  const unique = [...new Set(others)];
-  const shuffled = unique.sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, 3);
-}
-
 export function QuizPopup({ item, allItems, format, onComplete }: Props) {
   const [input, setInput] = useState('');
+  const [selectedMcOption, setSelectedMcOption] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [correct, setCorrect] = useState(false);
 
@@ -37,12 +29,16 @@ export function QuizPopup({ item, allItems, format, onComplete }: Props) {
     setSubmitted(true);
   };
 
-  const distractors = format === 'mc'
-    ? pickDistractors(item, allItems)
-    : [];
-  const mcOptions = format === 'mc'
-    ? [...distractors, item.english].sort(() => Math.random() - 0.5)
-    : [];
+  const mcOptions = useMemo(() => {
+    if (format !== 'mc') return [];
+    const others = allItems
+      .filter(i => i.id !== item.id)
+      .map(i => i.english);
+    const unique = [...new Set(others)];
+    const shuffled = unique.sort(() => Math.random() - 0.5);
+    const distractors = shuffled.slice(0, 3);
+    return [...distractors, item.english].sort(() => Math.random() - 0.5);
+  }, [format, item, allItems]);
 
   return (
     <div style={{
@@ -110,16 +106,16 @@ export function QuizPopup({ item, allItems, format, onComplete }: Props) {
                   onClick={() => handleMcChoice(opt)}
                   style={{
                     background: submitted && opt === item.english ? '#83d68e'
-                              : submitted && opt === input ? '#ff6b6b'
+                              : submitted && opt === selectedMcOption ? '#ff6b6b'
                               : '#2a2a3e',
                     border: `2px solid ${submitted && opt === item.english ? '#83d68e'
-                              : submitted && opt === input ? '#ff6b6b'
+                              : submitted && opt === selectedMcOption ? '#ff6b6b'
                               : '#4a4a6e'}`,
                     color: submitted && opt === item.english ? '#000' : '#fff',
                     padding: '6px 10px', fontSize: 8,
                     fontFamily: "'Press Start 2P', monospace", cursor: submitted ? 'default' : 'pointer',
                   }}
-                  onMouseDown={() => { if (!submitted) setInput(opt); }}
+                  onMouseDown={() => { if (!submitted) setSelectedMcOption(opt); }}
                 >
                   {opt}
                 </button>
