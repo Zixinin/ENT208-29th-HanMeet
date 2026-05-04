@@ -1,5 +1,5 @@
-import React, { lazy, Suspense, useMemo, useState } from 'react';
-import { BookOpen, Gamepad2, Search, UserRound } from 'lucide-react';
+import React, { lazy, Suspense, useMemo, useRef, useState } from 'react';
+import { BookOpen, Gamepad2, Search, UserRound, Volume2, VolumeX } from 'lucide-react';
 import { useAppState } from './store/useAppState';
 import { TabId, VocabularyItem } from './types/domain';
 import { ActiveRoomInfo } from './features/game/types/tasks';
@@ -39,6 +39,8 @@ const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>('game');
   const [activeRoomInfo, setActiveRoomInfo] = useState<ActiveRoomInfo | null>(null);
+  const [musicPlaying, setMusicPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const {
     profile,
     progress,
@@ -79,6 +81,27 @@ export default function App() {
       source: 'space',
       aiGenerated: false,
     });
+  };
+
+  const toggleMusic = async () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (musicPlaying) {
+      audio.pause();
+      setMusicPlaying(false);
+      return;
+    }
+
+    audio.volume = 0.22;
+    audio.loop = true;
+
+    try {
+      await audio.play();
+      setMusicPlaying(true);
+    } catch {
+      setMusicPlaying(false);
+    }
   };
 
   return (
@@ -165,8 +188,28 @@ export default function App() {
                   {tab.label.toUpperCase()}
                 </button>
               ))}
+              <button
+                onClick={toggleMusic}
+                title={musicPlaying ? 'Pause music' : 'Play music'}
+                aria-label={musicPlaying ? 'Pause music' : 'Play music'}
+                style={{
+                  width: 42,
+                  height: 38,
+                  border: '3px solid var(--pixel-border)',
+                  background: musicPlaying ? 'var(--pixel-green)' : 'var(--pixel-panel)',
+                  color: musicPlaying ? '#000' : 'var(--pixel-text)',
+                  boxShadow: '3px 3px 0 #000',
+                  cursor: 'pointer',
+                  display: 'grid',
+                  placeItems: 'center',
+                }}
+              >
+                {musicPlaying ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+              </button>
             </nav>
           </header>
+
+          <audio ref={audioRef} src="/audio/backgroud-music.mp3" preload="auto" loop />
 
           <main
             className="flex-1"
